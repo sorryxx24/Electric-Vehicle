@@ -15,7 +15,7 @@
     <script>
         // ==========================================
         // ⚠️【請修改這裡】填入您的 Google Apps Script 網址
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxSGcz4uNWBFzW86O6mcbHXFBac5S1sd7cwIzcw9n0tWgAjLUMF8XhtF8WA_QYJ5NSD/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx0Au3B6T6o8lapHU8qv3cX0PpU5h34zvm1YftzhXZDehuLmwJWIEWj02sTXklTZ-2X/exec";
         // ==========================================
     </script>
 
@@ -27,18 +27,13 @@
         .sidebar-link.active { background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
         .sidebar-link:hover:not(.active) { background: #1e293b; color: white; }
         
-        /* 表格樣式：確保捲軸正常 */
         .table-wrapper { 
-            flex: 1;            
-            min-height: 0;      
-            overflow: auto;     
-            background: white; 
-            border-radius: 8px; 
-            border: 1px solid #e2e8f0; 
+            flex: 1; min-height: 0; overflow: auto; 
+            background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); 
         }
         
-        table { width: 100%; min-width: 1100px; border-collapse: collapse; table-layout: fixed; }
+        table { width: 100%; min-width: 1200px; border-collapse: collapse; table-layout: fixed; }
         th { background: #f8fafc; color: #475569; font-weight: 700; padding: 10px; border: 1px solid #cbd5e1; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         td { border: 1px solid #cbd5e1; height: 42px; padding: 0; vertical-align: middle; background: white; }
         
@@ -62,6 +57,10 @@
         .day-cell.weekend { color: #ef4444; }
         .day-cell.empty { border: none; background: transparent; cursor: default; }
         
+        /* 展示牆卡片 */
+        .gallery-card { break-inside: avoid; margin-bottom: 1.5rem; transition: transform 0.2s; }
+        .gallery-card:hover { transform: translateY(-4px); }
+
         #loading { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: none; justify-content: center; align-items: center; color: white; backdrop-filter: blur(2px); }
         .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -82,6 +81,8 @@
         <nav class="flex-1 p-4 space-y-2">
             <div onclick="switchPage('input')" id="nav-input" class="sidebar-link active px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-edit-2-line text-xl"></i> 新增作業區</div>
             <div onclick="switchPage('history')" id="nav-history" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-database-2-line text-xl"></i> 歷史資料庫</div>
+            <!-- ★ 新增：成果展示 -->
+            <div onclick="switchPage('gallery')" id="nav-gallery" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-gallery-view-2 text-xl text-yellow-400"></i> 成果展示</div>
         </nav>
     </aside>
 
@@ -160,7 +161,7 @@
 
             <div class="table-wrapper flex-1 min-h-0 overflow-auto bg-white border border-slate-200 rounded-lg shadow-sm mb-0">
                 <table id="historyTable">
-                    <thead><tr><th style="width:60px">項次</th><th style="width:250px">日期</th><th style="width:150px">單位/層級</th><th style="width:200px">地點</th><th style="width:250px">訓練項目</th><th style="width:80px">辦理<br>場次</th><th style="width:80px">參與<br>人數</th><th style="width:150px">備註</th></tr></thead>
+                    <thead><tr><th style="width:60px">項次</th><th style="width:220px">日期</th><th style="width:120px">單位/層級</th><th style="width:150px">地點</th><th style="width:200px">訓練項目</th><th style="width:60px">場次</th><th style="width:60px">人數</th><th style="width:120px">備註</th><th style="width:100px">成果照片</th></tr></thead>
                     <tbody id="historyBody"></tbody>
                 </table>
             </div>
@@ -173,10 +174,32 @@
                 </div>
             </div>
         </div>
+
+        <!-- ★ 新增：頁面 C: 成果展示 -->
+        <div id="page-gallery" class="hidden flex-1 flex-col p-6 overflow-hidden h-full bg-slate-50">
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="w-1 h-6 bg-yellow-400 rounded-full"></span>
+                    <h2 class="text-xl font-bold text-slate-800">成果展示牆</h2>
+                    <span class="text-sm text-slate-500 ml-2">(隨機展示精彩訓練紀錄)</span>
+                </div>
+                <button class="btn btn-white" onclick="renderGallery()"><i class="ri-shuffle-line"></i> 隨機切換</button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto min-h-0 pr-2" id="galleryContainer">
+                <!-- 瀑布流容器 -->
+                <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6" id="galleryGrid">
+                    <!-- 卡片由 JS 產生 -->
+                </div>
+            </div>
+        </div>
     </main>
 
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="processCSV(this)">
+    <!-- 隱藏的照片上傳 Input -->
+    <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(this)">
 
+    <!-- 日曆 Modal -->
     <div id="calendarModal" class="fixed inset-0 bg-black/50 hidden z-[1000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[350px] p-5 rounded-2xl shadow-2xl">
             <div class="flex justify-between items-center mb-2">
@@ -202,9 +225,11 @@
     <script>
         const $ = (s) => document.querySelector(s);
         let inputData = [], historyData = [], currentCalRow = null, selectedDates = new Set(), currentYear = 2025, currentMonth = 1;
-        
         let currentPage = 1;
-        const itemsPerPage = 20;
+        const itemsPerPage = 15;
+        
+        // 上傳暫存變數
+        let uploadTarget = null; 
 
         window.onload = function() { 
             addInputRow(); 
@@ -214,19 +239,19 @@
         function switchPage(page) {
             document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
             if(document.getElementById(`nav-${page}`)) document.getElementById(`nav-${page}`).classList.add('active');
+            
             $('#page-input').classList.add('hidden'); 
-            $('#page-history').classList.remove('hidden'); 
+            $('#page-history').classList.add('hidden'); 
+            $('#page-history').classList.remove('flex'); // 移除 flex 避免干擾
+            $('#page-gallery').classList.add('hidden'); 
+            $('#page-gallery').classList.remove('flex');
             
-            // CSS 佈局修正
-            if (page === 'history') {
-                $('#page-history').classList.remove('hidden');
-                $('#page-history').classList.add('flex');
-            } else {
-                $('#page-history').classList.add('hidden');
-                $('#page-history').classList.remove('flex');
-            }
+            const target = $(`#page-${page}`);
+            target.classList.remove('hidden');
             
-            $(`#page-${page}`).classList.remove('hidden');
+            if(page === 'history' || page === 'gallery') target.classList.add('flex');
+            
+            if(page === 'gallery') renderGallery();
         }
 
         function fixYearFormat(str) { if(!str) return ""; return str.replace(/^0+(11\d)/, '$1'); }
@@ -248,20 +273,13 @@
             });
         }
 
-        function showLoading(msg) {
-            $('#loadingText').innerText = msg;
-            $('#loading').style.display = 'flex';
-        }
-        function hideLoading() {
-            $('#loading').style.display = 'none';
-        }
+        function showLoading(msg) { $('#loadingText').innerText = msg; $('#loading').style.display = 'flex'; }
+        function hideLoading() { $('#loading').style.display = 'none'; }
 
         function saveToCloud() {
             const validData = inputData.filter(r => r.date || r.item || r.session);
             if (validData.length === 0) return alert('沒有資料可儲存');
-            
             validData.forEach(r => r.date = fixYearFormat(r.date));
-
             showLoading("資料儲存中...");
             fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ data: validData, mode: 'append' }), headers: { 'Content-Type': 'text/plain' } })
             .then(res => res.json())
@@ -280,10 +298,7 @@
             Papa.parse(input.files[0], { header: true, skipEmptyLines: true, complete: function (res) {
                 const imp = res.data; let count = 0;
                 imp.forEach(r => {
-                    const rowStr = JSON.stringify(r); 
-                    // ★ 防呆：過濾 總計/合計/範例
-                    if (rowStr.includes("總計") || rowStr.includes("合計") || rowStr.includes("範例")) return; 
-                    
+                    const rowStr = JSON.stringify(r); if (rowStr.includes("總計") || rowStr.includes("合計") || rowStr.includes("範例")) return; 
                     const get = (keys) => { for(let k of Object.keys(r)) if(keys.some(key=>k.includes(key))) return r[k]; return ''; };
                     let cleanDate = fixYearFormat(get(['日期','Date']));
                     inputData.push({ date: cleanDate, unit: get(['單位','Unit']), loc: get(['地點','Loc']), item: get(['項目','Item']), session: get(['場次','Session']), people: get(['人數','Peo']), note: get(['備註']) });
@@ -303,7 +318,7 @@
 
         function loadHistory() {
             if(GAS_API_URL.includes("請填入")) return;
-            showLoading('資料讀取中...');
+            showLoading("資料讀取中...");
             fetch(GAS_API_URL).then(r => r.json()).then(json => {
                 if (json.status === 'success') {
                     historyData = json.data;
@@ -312,9 +327,7 @@
                     currentPage = 1;
                     renderHistoryTable();
                 }
-            })
-            .catch(err => console.error("載入失敗", err))
-            .finally(() => hideLoading());
+            }).catch(err => console.error("載入失敗", err)).finally(() => hideLoading());
         }
 
         function changePage(delta) {
@@ -339,18 +352,124 @@
                 const globalIndex = startIdx + i + 1;
                 const tr = document.createElement('tr');
                 tr.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50';
-                tr.innerHTML = `<td class="text-center text-slate-500 font-mono text-xs">${globalIndex}</td><td class="px-2">${row.date}</td><td class="px-2 text-slate-600 text-sm">${row.unit}</td><td class="px-2 text-slate-600 text-sm">${row.loc}</td><td class="px-2">${row.item}</td><td class="text-center font-bold text-blue-600">${row.session}</td><td class="text-center font-bold text-emerald-600">${row.people}</td><td class="px-2 text-xs text-slate-400">${row.note}</td>`;
+                
+                // 增加照片按鈕
+                let photoBtn = `<button onclick="triggerPhotoUpload(${startIdx + i})" class="text-slate-400 hover:text-blue-600 transition"><i class="ri-camera-line text-lg"></i></button>`;
+                if(row.folderUrl) {
+                    photoBtn = `
+                    <div class="flex gap-2 justify-center">
+                        <a href="${row.folderUrl}" target="_blank" class="text-blue-500 hover:text-blue-700" title="開啟資料夾"><i class="ri-folder-open-fill text-lg"></i></a>
+                        <button onclick="triggerPhotoUpload(${startIdx + i})" class="text-slate-400 hover:text-blue-600" title="加傳照片"><i class="ri-add-circle-line text-lg"></i></button>
+                    </div>`;
+                }
+
+                tr.innerHTML = `<td class="text-center text-slate-500 font-mono text-xs">${globalIndex}</td><td class="px-2">${row.date}</td><td class="px-2 text-slate-600 text-sm">${row.unit}</td><td class="px-2 text-slate-600 text-sm">${row.loc}</td><td class="px-2">${row.item}</td><td class="text-center font-bold text-blue-600">${row.session}</td><td class="text-center font-bold text-emerald-600">${row.people}</td><td class="px-2 text-xs text-slate-400">${row.note}</td><td class="text-center">${photoBtn}</td>`;
                 tbody.appendChild(tr);
             });
 
             $('#pageInfoStart').innerText = historyData.length > 0 ? startIdx + 1 : 0;
             $('#pageInfoEnd').innerText = Math.min(endIdx, historyData.length);
             $('#pageInfoTotal').innerText = historyData.length;
-            
             $('#prevBtn').disabled = currentPage === 1;
             $('#nextBtn').disabled = endIdx >= historyData.length;
         }
 
+        // ★ 上傳照片觸發
+        function triggerPhotoUpload(index) {
+            uploadTarget = historyData[index];
+            $('#photoInput').click();
+        }
+
+        async function handlePhotoUpload(input) {
+            if (!input.files || input.files.length === 0) return;
+            if (!uploadTarget) return alert("系統錯誤：找不到對應資料");
+
+            showLoading(`正在上傳 ${input.files.length} 張照片...`);
+
+            // 逐張上傳
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                try {
+                    const base64 = await fileToBase64(file);
+                    const payload = {
+                        mode: 'upload_image',
+                        data: {
+                            date: uploadTarget.date,
+                            unit: uploadTarget.unit,
+                            item: uploadTarget.item,
+                            fileData: base64.split(',')[1],
+                            mimeType: file.type,
+                            fileName: file.name
+                        }
+                    };
+
+                    await fetch(GAS_API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(payload),
+                        headers: { 'Content-Type': 'text/plain' }
+                    });
+                } catch (e) {
+                    console.error(e);
+                    alert(`上傳失敗：${file.name}`);
+                }
+            }
+
+            alert("照片上傳完成！");
+            input.value = ''; // 清空
+            loadHistory(); // 重新載入以更新連結
+            hideLoading();
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ★ 成果展示邏輯
+        function renderGallery() {
+            const container = $('#galleryGrid');
+            container.innerHTML = '';
+
+            // 1. 優先找出有照片的
+            let withPhotos = historyData.filter(r => r.coverUrl);
+            // 2. 沒照片的
+            let withoutPhotos = historyData.filter(r => !r.coverUrl);
+
+            // 隨機打亂
+            withPhotos.sort(() => Math.random() - 0.5);
+            withoutPhotos.sort(() => Math.random() - 0.5);
+
+            // 取前 20 筆顯示 (混搭，優先顯示有照片的)
+            let displayList = [...withPhotos, ...withoutPhotos].slice(0, 20);
+
+            displayList.forEach(item => {
+                const imgUrl = item.coverUrl ? item.coverUrl : `https://placehold.co/600x400/e2e8f0/94a3b8?text=${encodeURIComponent(item.item.substring(0,4))}`;
+                const card = document.createElement('div');
+                card.className = 'gallery-card bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100 cursor-pointer group';
+                card.onclick = () => { if(item.folderUrl) window.open(item.folderUrl, '_blank'); };
+                
+                card.innerHTML = `
+                    <div class="relative overflow-hidden aspect-video bg-slate-100">
+                        <img src="${imgUrl}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" loading="lazy">
+                        ${item.folderUrl ? '<div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-lg backdrop-blur-sm"><i class="ri-image-2-line"></i> 相簿</div>' : ''}
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-slate-800 line-clamp-1 mb-1">${item.item}</h3>
+                        <div class="flex justify-between items-center text-xs text-slate-500">
+                            <span><i class="ri-calendar-line"></i> ${item.date}</span>
+                            <span class="bg-slate-100 px-2 py-0.5 rounded-full">${item.unit}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ... (保留原本的 Calendar, Excel 函式，未變動) ...
         function openCalendar(idx) { currentCalRow = idx; selectedDates.clear(); renderCalendarGrid(); $('#calendarModal').classList.remove('hidden'); $('#calendarModal').classList.add('flex'); }
         function renderCalendarGrid() {
             const grid = $('#calGrid'); grid.innerHTML = '';
