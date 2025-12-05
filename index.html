@@ -27,14 +27,14 @@
         .sidebar-link.active { background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
         .sidebar-link:hover:not(.active) { background: #1e293b; color: white; }
         
-        /* 表格區塊樣式：確保高度正確並可捲動 */
+        /* 表格區塊樣式：彈性伸縮，確保分頁列在底部 */
         .table-wrapper { 
+            flex: 1;
             overflow: auto; 
             background: white; 
             border-radius: 8px; 
             border: 1px solid #e2e8f0; 
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); 
-            height: calc(100% - 60px); /* 扣掉分頁列的高度 */
         }
         
         table { width: 100%; min-width: 1100px; border-collapse: collapse; table-layout: fixed; }
@@ -61,7 +61,6 @@
         .day-cell.weekend { color: #ef4444; }
         .day-cell.empty { border: none; background: transparent; cursor: default; }
         
-        /* 確保 Loading 畫面有樣式，避免 Tailwind 載入失敗時版面全白 */
         #loading { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: none; justify-content: center; align-items: center; color: white; backdrop-filter: blur(2px); }
         .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -79,7 +78,7 @@
             <div onclick="switchPage('input')" id="nav-input" class="sidebar-link active px-4 py-3 rounded-xl flex items-center gap-3"><i class="ri-edit-2-line text-xl"></i> 新增作業區</div>
             <div onclick="switchPage('history')" id="nav-history" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3"><i class="ri-database-2-line text-xl"></i> 歷史資料庫</div>
         </nav>
-        <!-- 已移除側邊欄底部文字 -->
+        <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">僅供內部使用 v2.0</div>
     </aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -114,8 +113,8 @@
             <div class="mt-4 flex justify-center"><button class="btn btn-white w-full md:w-auto justify-center shadow-sm" onclick="addInputRow()"><i class="ri-add-line text-lg"></i> 新增一列</button></div>
         </div>
 
-        <div id="page-history" class="hidden flex-1 flex-col p-6 overflow-hidden">
-            <div class="flex justify-between items-center mb-4">
+        <div id="page-history" class="hidden flex-1 flex-col p-6 overflow-hidden h-full">
+            <div class="flex justify-between items-center mb-4 shrink-0">
                 <div class="flex items-center gap-2">
                     <span class="w-1 h-6 bg-emerald-600 rounded-full"></span>
                     <h2 class="text-xl font-bold text-slate-800">歷史資料庫</h2>
@@ -133,32 +132,29 @@
                 </div>
             </div>
             
-            <div class="bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-xl mb-4 flex gap-6 text-sm text-emerald-800 font-bold shadow-sm">
+            <div class="bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-xl mb-4 flex gap-6 text-sm text-emerald-800 font-bold shadow-sm shrink-0">
                 <div><i class="ri-bar-chart-box-line text-lg mr-1"></i> 總場次：<span id="histTotalSession" class="text-xl">0</span> 場</div>
                 <div><i class="ri-group-line text-lg mr-1"></i> 總人數：<span id="histTotalPeople" class="text-xl">0</span> 人</div>
             </div>
 
-            <div class="table-wrapper flex-1">
+            <!-- 表格區：flex-1 自動填滿 -->
+            <div class="table-wrapper">
                 <table id="historyTable">
                     <thead><tr><th style="width:60px">項次</th><th style="width:250px">日期</th><th style="width:150px">單位/層級</th><th style="width:200px">地點</th><th style="width:250px">訓練項目</th><th style="width:80px">辦理<br>場次</th><th style="width:80px">參與<br>人數</th><th style="width:150px">備註</th></tr></thead>
                     <tbody id="historyBody"></tbody>
                 </table>
             </div>
 
-            <!-- 分頁控制器 -->
-            <div class="h-[50px] flex items-center justify-between border-t border-slate-200 pt-2 mt-2">
+            <!-- ★ 分頁控制器 (置底) -->
+            <div class="h-[60px] flex items-center justify-between border-t border-slate-200 pt-3 mt-2 shrink-0 bg-slate-100">
                 <div class="text-sm text-slate-500">顯示第 <span id="pageInfoStart" class="font-bold text-slate-700">0</span> - <span id="pageInfoEnd" class="font-bold text-slate-700">0</span> 筆，共 <span id="pageInfoTotal" class="font-bold text-slate-700">0</span> 筆</div>
                 <div class="flex gap-2">
-                    <button onclick="changePage(-1)" id="prevBtn" class="px-3 py-1 bg-white border border-slate-300 rounded text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"><i class="ri-arrow-left-s-line"></i> 上一頁</button>
-                    <button onclick="changePage(1)" id="nextBtn" class="px-3 py-1 bg-white border border-slate-300 rounded text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">下一頁 <i class="ri-arrow-right-s-line"></i></button>
+                    <button onclick="changePage(-1)" id="prevBtn" class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition"><i class="ri-arrow-left-s-line"></i> 上一頁</button>
+                    <button onclick="changePage(1)" id="nextBtn" class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition">下一頁 <i class="ri-arrow-right-s-line"></i></button>
                 </div>
             </div>
         </div>
-
-        <!-- 頁尾 -->
-        <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-400">
-            © 2025 電動車安全救援訓練統計系統 | 台北市政府消防局訓練中心
-        </footer>
+        <!-- 頁尾已移除 -->
     </main>
 
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="processCSV(this)">
@@ -190,8 +186,9 @@
         let inputData = [], historyData = [], currentCalRow = null, selectedDates = new Set(), currentYear = 2025, currentMonth = 1;
         const builtInHolidays = {}; 
         
+        // ★ 分頁變數：設定為 20 筆
         let currentPage = 1;
-        const itemsPerPage = 15;
+        const itemsPerPage = 20;
 
         window.onload = function() { addInputRow(); loadHistory(); };
 
@@ -202,7 +199,7 @@
             $(`#page-${page}`).classList.remove('hidden');
         }
 
-        // 年份格式修正 (0114 -> 114)
+        // 年份格式修正
         function fixYearFormat(str) {
             if(!str) return "";
             return str.replace(/^0+(11\d)/, '$1'); 
@@ -303,11 +300,13 @@
             const tbody = $('#historyBody'); tbody.innerHTML = '';
             let tSession = 0, tPeople = 0;
             
+            // 算總計
             historyData.forEach(row => {
                 tSession += parseInt(row.session)||0; tPeople += parseInt(row.people)||0;
             });
             $('#histTotalSession').innerText = tSession; $('#histTotalPeople').innerText = tPeople;
 
+            // 分頁邏輯
             const startIdx = (currentPage - 1) * itemsPerPage;
             const endIdx = startIdx + itemsPerPage;
             const pageData = historyData.slice(startIdx, endIdx);
@@ -320,6 +319,7 @@
                 tbody.appendChild(tr);
             });
 
+            // 更新分頁資訊
             $('#pageInfoStart').innerText = historyData.length > 0 ? startIdx + 1 : 0;
             $('#pageInfoEnd').innerText = Math.min(endIdx, historyData.length);
             $('#pageInfoTotal').innerText = historyData.length;
