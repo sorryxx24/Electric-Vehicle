@@ -28,12 +28,16 @@
         .sidebar-link:hover:not(.active) { background: #1e293b; color: white; }
         
         .table-wrapper { 
-            flex: 1; min-height: 0; overflow: auto; 
-            background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
+            flex: 1;            
+            min-height: 0;      
+            overflow: auto;     
+            background: white; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0; 
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); 
         }
         
-        table { width: 100%; min-width: 1200px; border-collapse: collapse; table-layout: fixed; }
+        table { width: 100%; min-width: 1100px; border-collapse: collapse; table-layout: fixed; }
         th { background: #f8fafc; color: #475569; font-weight: 700; padding: 10px; border: 1px solid #cbd5e1; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         td { border: 1px solid #cbd5e1; height: 42px; padding: 0; vertical-align: middle; background: white; }
         
@@ -49,6 +53,7 @@
         .btn-green:hover { background: #047857; }
         .btn-white { background: white; border: 1px solid #cbd5e1; color: #475569; }
         .btn-white:hover { background: #f8fafc; border-color: #94a3b8; color: #2563eb; }
+        .btn-active-filter { background: #2563eb; color: white; border-color: #2563eb; }
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .day-cell { padding: 8px; text-align: center; border-radius: 6px; cursor: pointer; border: 1px solid #e2e8f0; font-size: 14px; background: white; }
@@ -57,7 +62,6 @@
         .day-cell.weekend { color: #ef4444; }
         .day-cell.empty { border: none; background: transparent; cursor: default; }
         
-        /* 展示牆卡片 */
         .gallery-card { break-inside: avoid; margin-bottom: 1.5rem; transition: transform 0.2s; }
         .gallery-card:hover { transform: translateY(-4px); }
 
@@ -81,7 +85,6 @@
         <nav class="flex-1 p-4 space-y-2">
             <div onclick="switchPage('input')" id="nav-input" class="sidebar-link active px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-edit-2-line text-xl"></i> 新增作業區</div>
             <div onclick="switchPage('history')" id="nav-history" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-database-2-line text-xl"></i> 歷史資料庫</div>
-            <!-- ★ 新增：成果展示 -->
             <div onclick="switchPage('gallery')" id="nav-gallery" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-gallery-view-2 text-xl text-yellow-400"></i> 成果展示</div>
         </nav>
     </aside>
@@ -102,7 +105,10 @@
             <div class="flex justify-between items-center mb-4 shrink-0">
                 <div class="flex items-center gap-2">
                     <span class="w-1 h-6 bg-blue-600 rounded-full"></span>
-                    <h2 class="text-xl font-bold text-slate-800">新增作業區</h2>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">新增作業區</h2>
+                        <p class="text-xs text-rose-600 font-bold mt-0.5">※ 注意：參與人數請填寫「該次訓練所有梯次的總和」，系統不會自動加總。</p>
+                    </div>
                 </div>
                 <div class="flex gap-2">
                     <button class="btn btn-white" onclick="downloadTemplate()"><i class="ri-file-download-line"></i> 下載範本</button>
@@ -113,7 +119,19 @@
             
             <div class="table-wrapper">
                 <table id="inputTable">
-                    <thead><tr><th style="width:50px">刪除</th><th style="width:50px">項次</th><th style="width:220px">日期 (支援智慧輸入)</th><th style="width:150px">單位/層級</th><th style="width:200px">地點</th><th style="width:200px">訓練項目</th><th style="width:80px">辦理<br>場次</th><th style="width:80px">參與<br>人數</th><th style="width:150px">備註</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th style="width:50px">刪除</th>
+                            <th style="width:50px">項次</th>
+                            <th style="width:220px">日期 (支援智慧輸入)</th>
+                            <th style="width:150px">單位/層級</th>
+                            <th style="width:200px">地點</th>
+                            <th style="width:200px">訓練項目</th>
+                            <th style="width:80px">辦理<br>場次</th>
+                            <th style="width:80px">參與人數<br><span class="text-[10px] font-normal text-slate-500">(各梯總和)</span></th>
+                            <th style="width:150px">備註</th>
+                        </tr>
+                    </thead>
                     <tbody id="inputBody"></tbody>
                     <tfoot class="example-row"><tr><td></td><td>Ex</td><td>114年1月1、2日</td><td>信義中隊</td><td>地下停車場</td><td>滅火毯操作</td><td>1</td><td>20</td><td>(範例格式)</td></tr></tfoot>
                 </table>
@@ -175,19 +193,21 @@
             </div>
         </div>
 
-        <!-- ★ 新增：頁面 C: 成果展示 -->
+        <!-- 頁面 C: 成果展示 -->
         <div id="page-gallery" class="hidden flex-1 flex-col p-6 overflow-hidden h-full bg-slate-50">
             <div class="flex justify-between items-center mb-6 shrink-0">
                 <div class="flex items-center gap-2">
                     <span class="w-1 h-6 bg-yellow-400 rounded-full"></span>
                     <h2 class="text-xl font-bold text-slate-800">成果展示牆</h2>
-                    <span class="text-sm text-slate-500 ml-2">(隨機展示精彩訓練紀錄)</span>
                 </div>
-                <button class="btn btn-white" onclick="renderGallery()"><i class="ri-shuffle-line"></i> 隨機切換</button>
+                <!-- 切換按鈕 -->
+                <div class="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                    <button id="btnGalleryLatest" class="px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-500 hover:text-slate-800" onclick="renderGallery('latest')">🔥 最新</button>
+                    <button id="btnGalleryRandom" class="px-4 py-1.5 rounded-lg text-sm font-bold transition bg-slate-800 text-white shadow" onclick="renderGallery('random')">🎲 隨機</button>
+                </div>
             </div>
             
             <div class="flex-1 overflow-y-auto min-h-0 pr-2" id="galleryContainer">
-                <!-- 瀑布流容器 -->
                 <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6" id="galleryGrid">
                     <!-- 卡片由 JS 產生 -->
                 </div>
@@ -196,7 +216,6 @@
     </main>
 
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="processCSV(this)">
-    <!-- 隱藏的照片上傳 Input -->
     <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(this)">
 
     <!-- 日曆 Modal -->
@@ -226,10 +245,9 @@
         const $ = (s) => document.querySelector(s);
         let inputData = [], historyData = [], currentCalRow = null, selectedDates = new Set(), currentYear = 2025, currentMonth = 1;
         let currentPage = 1;
-        const itemsPerPage = 15;
-        
-        // 上傳暫存變數
+        const itemsPerPage = 20;
         let uploadTarget = null; 
+        let galleryMode = 'random'; 
 
         window.onload = function() { 
             addInputRow(); 
@@ -242,7 +260,7 @@
             
             $('#page-input').classList.add('hidden'); 
             $('#page-history').classList.add('hidden'); 
-            $('#page-history').classList.remove('flex'); // 移除 flex 避免干擾
+            $('#page-history').classList.remove('flex');
             $('#page-gallery').classList.add('hidden'); 
             $('#page-gallery').classList.remove('flex');
             
@@ -251,7 +269,7 @@
             
             if(page === 'history' || page === 'gallery') target.classList.add('flex');
             
-            if(page === 'gallery') renderGallery();
+            if(page === 'gallery') renderGallery(galleryMode);
         }
 
         function fixYearFormat(str) { if(!str) return ""; return str.replace(/^0+(11\d)/, '$1'); }
@@ -353,7 +371,6 @@
                 const tr = document.createElement('tr');
                 tr.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50';
                 
-                // 增加照片按鈕
                 let photoBtn = `<button onclick="triggerPhotoUpload(${startIdx + i})" class="text-slate-400 hover:text-blue-600 transition"><i class="ri-camera-line text-lg"></i></button>`;
                 if(row.folderUrl) {
                     photoBtn = `
@@ -374,7 +391,6 @@
             $('#nextBtn').disabled = endIdx >= historyData.length;
         }
 
-        // ★ 上傳照片觸發
         function triggerPhotoUpload(index) {
             uploadTarget = historyData[index];
             $('#photoInput').click();
@@ -382,42 +398,20 @@
 
         async function handlePhotoUpload(input) {
             if (!input.files || input.files.length === 0) return;
-            if (!uploadTarget) return alert("系統錯誤：找不到對應資料");
-
+            if (!uploadTarget) return alert("系統錯誤");
             showLoading(`正在上傳 ${input.files.length} 張照片...`);
-
-            // 逐張上傳
             for (let i = 0; i < input.files.length; i++) {
                 const file = input.files[i];
                 try {
                     const base64 = await fileToBase64(file);
                     const payload = {
                         mode: 'upload_image',
-                        data: {
-                            date: uploadTarget.date,
-                            unit: uploadTarget.unit,
-                            item: uploadTarget.item,
-                            fileData: base64.split(',')[1],
-                            mimeType: file.type,
-                            fileName: file.name
-                        }
+                        data: { date: uploadTarget.date, unit: uploadTarget.unit, item: uploadTarget.item, fileData: base64.split(',')[1], mimeType: file.type, fileName: file.name }
                     };
-
-                    await fetch(GAS_API_URL, {
-                        method: 'POST',
-                        body: JSON.stringify(payload),
-                        headers: { 'Content-Type': 'text/plain' }
-                    });
-                } catch (e) {
-                    console.error(e);
-                    alert(`上傳失敗：${file.name}`);
-                }
+                    await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' } });
+                } catch (e) { console.error(e); }
             }
-
-            alert("照片上傳完成！");
-            input.value = ''; // 清空
-            loadHistory(); // 重新載入以更新連結
-            hideLoading();
+            alert("照片上傳完成！"); input.value = ''; loadHistory(); hideLoading();
         }
 
         function fileToBase64(file) {
@@ -429,33 +423,59 @@
             });
         }
 
-        // ★ 成果展示邏輯
-        function renderGallery() {
+        // ★ 成果展示邏輯：支援最新/隨機切換
+        function renderGallery(mode = 'random') {
+            galleryMode = mode; 
+            
+            const btnLatest = $('#btnGalleryLatest');
+            const btnRandom = $('#btnGalleryRandom');
+            if (mode === 'latest') {
+                btnLatest.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition bg-slate-800 text-white shadow";
+                btnRandom.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-500 hover:text-slate-800";
+            } else {
+                btnRandom.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition bg-slate-800 text-white shadow";
+                btnLatest.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-500 hover:text-slate-800";
+            }
+
             const container = $('#galleryGrid');
             container.innerHTML = '';
 
-            // 1. 優先找出有照片的
             let withPhotos = historyData.filter(r => r.coverUrl);
-            // 2. 沒照片的
             let withoutPhotos = historyData.filter(r => !r.coverUrl);
+            let displayList = [];
 
-            // 隨機打亂
-            withPhotos.sort(() => Math.random() - 0.5);
-            withoutPhotos.sort(() => Math.random() - 0.5);
-
-            // 取前 20 筆顯示 (混搭，優先顯示有照片的)
-            let displayList = [...withPhotos, ...withoutPhotos].slice(0, 20);
+            if (mode === 'latest') {
+                displayList = [...withPhotos, ...withoutPhotos].slice(0, 24);
+            } else {
+                withPhotos.sort(() => Math.random() - 0.5);
+                withoutPhotos.sort(() => Math.random() - 0.5);
+                displayList = [...withPhotos, ...withoutPhotos].slice(0, 24);
+            }
 
             displayList.forEach(item => {
-                const imgUrl = item.coverUrl ? item.coverUrl : `https://placehold.co/600x400/e2e8f0/94a3b8?text=${encodeURIComponent(item.item.substring(0,4))}`;
+                let cardContent = '';
+                if (item.coverUrl) {
+                    cardContent = `
+                        <img src="${item.coverUrl}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" loading="lazy">
+                        ${item.folderUrl ? '<div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-lg backdrop-blur-sm"><i class="ri-image-2-line"></i> 相簿</div>' : ''}
+                    `;
+                } else {
+                    // ★ 無照片時顯示「資料建構中」
+                    cardContent = `
+                        <div class="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-400">
+                            <i class="ri-folder-unknow-line text-3xl mb-1"></i>
+                            <span class="text-xs font-bold tracking-widest">資料建構中</span>
+                        </div>
+                    `;
+                }
+
                 const card = document.createElement('div');
                 card.className = 'gallery-card bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100 cursor-pointer group';
                 card.onclick = () => { if(item.folderUrl) window.open(item.folderUrl, '_blank'); };
                 
                 card.innerHTML = `
-                    <div class="relative overflow-hidden aspect-video bg-slate-100">
-                        <img src="${imgUrl}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" loading="lazy">
-                        ${item.folderUrl ? '<div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-lg backdrop-blur-sm"><i class="ri-image-2-line"></i> 相簿</div>' : ''}
+                    <div class="relative overflow-hidden aspect-video bg-slate-50">
+                        ${cardContent}
                     </div>
                     <div class="p-4">
                         <h3 class="font-bold text-slate-800 line-clamp-1 mb-1">${item.item}</h3>
@@ -469,7 +489,7 @@
             });
         }
 
-        // ... (保留原本的 Calendar, Excel 函式，未變動) ...
+        // ... (保留原本的 Calendar, Excel 函式) ...
         function openCalendar(idx) { currentCalRow = idx; selectedDates.clear(); renderCalendarGrid(); $('#calendarModal').classList.remove('hidden'); $('#calendarModal').classList.add('flex'); }
         function renderCalendarGrid() {
             const grid = $('#calGrid'); grid.innerHTML = '';
