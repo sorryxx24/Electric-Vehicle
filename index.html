@@ -15,7 +15,7 @@
     <script>
         // ==========================================
         // ⚠️【請修改這裡】填入您的 Google Apps Script 網址
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxwV1i5au-EL2-zAZ6gNI4TvB81B1xn0zyd6VrbKzh5kgC1MZOlbLm9oQ0TyPS138Up/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBfiVAahD0M9G-MYdfSu8oZ-QfR69ju1BGO55fJUc4HPOC6hJwkk_VrnMs79yaDnXz/exec";
         // ==========================================
     </script>
 
@@ -27,6 +27,7 @@
         .sidebar-link.active { background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
         .sidebar-link:hover:not(.active) { background: #1e293b; color: white; }
         
+        /* 表格樣式：確保捲軸正常 */
         .table-wrapper { 
             flex: 1;            
             min-height: 0;      
@@ -53,7 +54,6 @@
         .btn-green:hover { background: #047857; }
         .btn-white { background: white; border: 1px solid #cbd5e1; color: #475569; }
         .btn-white:hover { background: #f8fafc; border-color: #94a3b8; color: #2563eb; }
-        .btn-active-filter { background: #2563eb; color: white; border-color: #2563eb; }
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .day-cell { padding: 8px; text-align: center; border-radius: 6px; cursor: pointer; border: 1px solid #e2e8f0; font-size: 14px; background: white; }
@@ -200,7 +200,6 @@
                     <span class="w-1 h-6 bg-yellow-400 rounded-full"></span>
                     <h2 class="text-xl font-bold text-slate-800">成果展示牆</h2>
                 </div>
-                <!-- 切換按鈕 -->
                 <div class="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
                     <button id="btnGalleryLatest" class="px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-500 hover:text-slate-800" onclick="renderGallery('latest')">🔥 最新</button>
                     <button id="btnGalleryRandom" class="px-4 py-1.5 rounded-lg text-sm font-bold transition bg-slate-800 text-white shadow" onclick="renderGallery('random')">🎲 隨機</button>
@@ -268,7 +267,6 @@
             target.classList.remove('hidden');
             
             if(page === 'history' || page === 'gallery') target.classList.add('flex');
-            
             if(page === 'gallery') renderGallery(galleryMode);
         }
 
@@ -371,13 +369,19 @@
                 const tr = document.createElement('tr');
                 tr.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50';
                 
-                let photoBtn = `<button onclick="triggerPhotoUpload(${startIdx + i})" class="text-slate-400 hover:text-blue-600 transition"><i class="ri-camera-line text-lg"></i></button>`;
+                let photoBtn = '';
                 if(row.folderUrl) {
+                    // ★ 有資料夾 = 綠色實心按鈕
                     photoBtn = `
-                    <div class="flex gap-2 justify-center">
-                        <a href="${row.folderUrl}" target="_blank" class="text-blue-500 hover:text-blue-700" title="開啟資料夾"><i class="ri-folder-open-fill text-lg"></i></a>
-                        <button onclick="triggerPhotoUpload(${startIdx + i})" class="text-slate-400 hover:text-blue-600" title="加傳照片"><i class="ri-add-circle-line text-lg"></i></button>
+                    <div class="flex gap-2 justify-center items-center">
+                        <a href="${row.folderUrl}" target="_blank" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-emerald-700 shadow-sm" title="開啟資料夾">
+                            <i class="ri-folder-open-fill"></i> 已建檔
+                        </a>
+                        <button onclick="triggerPhotoUpload(${startIdx + i})" class="text-slate-300 hover:text-blue-500" title="加傳照片"><i class="ri-add-circle-fill text-lg"></i></button>
                     </div>`;
+                } else {
+                    // ★ 沒資料夾 = 灰色空心按鈕
+                    photoBtn = `<button onclick="triggerPhotoUpload(${startIdx + i})" class="text-slate-400 hover:text-blue-600 transition bg-slate-50 px-3 py-1 rounded border border-slate-200 text-xs flex items-center gap-1 mx-auto"><i class="ri-camera-line"></i> 上傳</button>`;
                 }
 
                 tr.innerHTML = `<td class="text-center text-slate-500 font-mono text-xs">${globalIndex}</td><td class="px-2">${row.date}</td><td class="px-2 text-slate-600 text-sm">${row.unit}</td><td class="px-2 text-slate-600 text-sm">${row.loc}</td><td class="px-2">${row.item}</td><td class="text-center font-bold text-blue-600">${row.session}</td><td class="text-center font-bold text-emerald-600">${row.people}</td><td class="px-2 text-xs text-slate-400">${row.note}</td><td class="text-center">${photoBtn}</td>`;
@@ -423,7 +427,7 @@
             });
         }
 
-        // ★ 成果展示邏輯：支援最新/隨機切換
+        // ★ 成果展示邏輯
         function renderGallery(mode = 'random') {
             galleryMode = mode; 
             
@@ -460,7 +464,6 @@
                         ${item.folderUrl ? '<div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-lg backdrop-blur-sm"><i class="ri-image-2-line"></i> 相簿</div>' : ''}
                     `;
                 } else {
-                    // ★ 無照片時顯示「資料建構中」
                     cardContent = `
                         <div class="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-400">
                             <i class="ri-folder-unknow-line text-3xl mb-1"></i>
