@@ -13,15 +13,35 @@
     <script>
         // ==========================================
         // ⚠️【請修改這裡】填入您的 Google Apps Script 網址
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxyswrg5e29evNHTcjIpdkxTwF5pWnzIMdkZGSW_WPFnH-D07oLmIgiUnxkiQaMdmo/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbznRUBnv-opvKuHv1rjyx8vn_p26GebhBSlx-1VmZ-euXqlsywXsix2KY0GSx6guL0/exec";
         // ==========================================
 
-        // 單位清單 (用於稽核儀表板)
-        const ALL_UNITS = {
-            "第一大隊": ["中正中隊", "華山分隊", "忠孝分隊", "泉州分隊", "古亭分隊", "城中分隊", "萬華中隊", "雙園分隊", "龍山分隊", "文山中隊", "萬芳分隊", "景美分隊", "木柵分隊", "寶橋分隊"],
-            "第二大隊": ["大安中隊", "金華分隊", "復興分隊", "安和分隊", "信義中隊", "永吉分隊", "信義分隊", "莊敬分隊", "南港中隊", "南港分隊", "舊莊分隊", "成德分隊"],
-            "第三大隊": ["中山中隊", "大直分隊", "圓山分隊", "松江分隊", "建國分隊", "松山中隊", "中崙分隊", "八德分隊", "內湖中隊", "民權分隊", "內湖分隊", "大湖分隊", "東湖分隊"],
-            "第四大隊": ["大同中隊", "建成分隊", "延平分隊", "大同分隊", "士林中隊", "山仔后分隊", "天母分隊", "福安分隊", "社子分隊", "劍潭分隊", "雙溪分隊", "後港分隊", "北投中隊", "陽明山分隊", "光明分隊", "關渡分隊", "石牌分隊", "秀山分隊"]
+        // ★ 核心資料：57 個應填報單位 (已排除 4 個高救分隊)
+        const AUDIT_UNITS = {
+            "第一大隊": {
+                "本部": ["第一救災救護大隊"],
+                "中正中隊": ["中正中隊", "華山分隊", "泉州分隊", "古亭分隊", "城中分隊"], // 排除忠孝
+                "萬華中隊": ["萬華中隊", "雙園分隊", "龍山分隊"],
+                "文山中隊": ["文山中隊", "萬芳分隊", "景美分隊", "木柵分隊", "寶橋分隊"]
+            },
+            "第二大隊": {
+                "本部": ["第二救災救護大隊"],
+                "大安中隊": ["大安中隊", "金華分隊", "復興分隊", "安和分隊"],
+                "信義中隊": ["信義中隊", "信義分隊", "莊敬分隊"], // 排除永吉
+                "南港中隊": ["南港中隊", "南港分隊", "舊莊分隊", "成德分隊"]
+            },
+            "第三大隊": {
+                "本部": ["第三救災救護大隊"],
+                "中山中隊": ["中山中隊", "大直分隊", "圓山分隊", "松江分隊"], // 排除建國
+                "松山中隊": ["松山中隊", "中崙分隊", "八德分隊"],
+                "內湖中隊": ["內湖中隊", "民權分隊", "內湖分隊", "大湖分隊", "東湖分隊"]
+            },
+            "第四大隊": {
+                "本部": ["第四救災救護大隊"],
+                "大同中隊": ["大同中隊", "建成分隊", "延平分隊", "大同分隊"],
+                "士林中隊": ["士林中隊", "山仔后分隊", "天母分隊", "福安分隊", "社子分隊", "劍潭分隊", "雙溪分隊"], // 排除後港
+                "北投中隊": ["北投中隊", "陽明山分隊", "光明分隊", "關渡分隊", "石牌分隊", "秀山分隊"]
+            }
         };
     </script>
 
@@ -49,13 +69,14 @@
         .gallery-card { break-inside: avoid; margin-bottom: 1.5rem; transition: transform 0.2s; }
         .gallery-card:hover { transform: translateY(-4px); }
         
-        /* 稽核燈號樣式 */
-        .audit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-        .audit-card { padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; cursor: pointer; transition: all 0.2s; background: white; position: relative; }
-        .audit-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .audit-card.confirmed { background-color: #ecfdf5; border-color: #10b981; color: #047857; } /* 綠燈 */
-        .audit-card.pending { background-color: #fef2f2; border-color: #ef4444; color: #b91c1c; } /* 紅燈 */
-        .status-icon { font-size: 24px; margin-bottom: 4px; display: block; }
+        /* 稽核紅綠燈樣式 */
+        .audit-card { padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; background: white; display: flex; justify-content: space-between; align-items: center; }
+        .audit-card:hover { background-color: #f8fafc; border-color: #94a3b8; }
+        .audit-card.checked { background-color: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
+        
+        /* 警告 Banner */
+        #alertBanner { transition: all 0.5s ease-in-out; }
+        #alertBanner.hidden { display: none; }
 
         #loading { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: none; justify-content: center; align-items: center; color: white; backdrop-filter: blur(2px); }
         .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -72,15 +93,25 @@
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <div onclick="switchPage('input')" id="nav-input" class="sidebar-link active px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-edit-2-line text-xl"></i> 新增作業區</div>
-            <div onclick="switchPage('audit')" id="nav-audit" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer bg-red-900/30 text-red-100 border border-red-800/50"><i class="ri-checkbox-circle-line text-xl text-red-400"></i> 填報稽核</div>
+            <div onclick="switchPage('audit')" id="nav-audit" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-checkbox-circle-line text-xl text-yellow-400"></i> 填報稽核</div>
             <div onclick="switchPage('history')" id="nav-history" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-database-2-line text-xl"></i> 歷史資料庫</div>
-            <div onclick="switchPage('gallery')" id="nav-gallery" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-gallery-view-2 text-xl text-yellow-400"></i> 成果展示</div>
+            <div onclick="switchPage('gallery')" id="nav-gallery" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-gallery-view-2 text-xl text-sky-400"></i> 成果展示</div>
         </nav>
-        <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">v2.1 稽核加強版</div>
+        <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">v2.5 (排除高救隊)</div>
     </aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative min-w-0">
         <!-- 手機 Header 略 -->
+
+        <!-- ★ 頂部警告 Banner (未結案提醒) -->
+        <div id="alertBanner" class="bg-rose-50 border-b border-rose-200 px-6 py-3 flex items-start gap-3 hidden">
+            <i class="ri-alarm-warning-fill text-rose-500 text-xl mt-0.5"></i>
+            <div class="flex-1">
+                <h3 class="font-bold text-rose-800 text-sm mb-1" id="alertTitle">114年1月 尚未結案提醒</h3>
+                <div class="text-xs text-rose-600 leading-relaxed" id="alertContent">載入中...</div>
+            </div>
+            <button onclick="$('#alertBanner').classList.add('hidden')" class="text-rose-400 hover:text-rose-700"><i class="ri-close-line text-lg"></i></button>
+        </div>
 
         <!-- A: 新增作業區 -->
         <div id="page-input" class="flex-1 flex flex-col p-6 overflow-hidden h-full">
@@ -102,27 +133,62 @@
             <div class="mt-4 flex justify-center shrink-0"><button class="btn btn-white" onclick="addInputRow()"><i class="ri-add-line"></i> 新增一列</button></div>
         </div>
 
-        <!-- ★ B: 填報稽核 (新功能) -->
+        <!-- ★ B: 填報稽核 (嵌入式) -->
         <div id="page-audit" class="hidden flex-1 flex-col p-6 overflow-hidden h-full bg-slate-50">
             <div class="flex justify-between items-center mb-4 shrink-0">
                 <div class="flex items-center gap-2">
-                    <span class="w-1 h-6 bg-red-500 rounded-full"></span>
+                    <span class="w-1 h-6 bg-yellow-500 rounded-full"></span>
+                    <div><h2 class="text-xl font-bold text-slate-800">填報稽核確認</h2><p class="text-xs text-slate-500 mt-0.5" id="auditMonthLabel">統計月份：...</p></div>
+                </div>
+                <button class="btn btn-white" onclick="loadHistory(true)"><i class="ri-refresh-line"></i> 重新檢查</button>
+            </div>
+
+            <!-- 操作區 -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">本月填報稽核</h2>
-                        <p class="text-xs text-slate-500 mt-0.5" id="auditMonthLabel">統計月份：載入中...</p>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">1. 選擇大隊</label>
+                        <select id="selBat" onchange="renderSquadSelect()" class="w-full border border-slate-300 rounded-lg p-2 text-sm font-bold bg-slate-50"><option value="">請選擇...</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">2. 選擇中隊 (或全部)</label>
+                        <select id="selSquad" onchange="renderUnitCheckboxes()" class="w-full border border-slate-300 rounded-lg p-2 text-sm font-bold bg-slate-50" disabled><option value="">請先選大隊</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">3. 選擇狀態</label>
+                        <div class="flex gap-2">
+                            <label class="flex-1 cursor-pointer border border-emerald-200 bg-emerald-50 rounded-lg p-2 flex items-center justify-center gap-2 hover:bg-emerald-100">
+                                <input type="radio" name="auditType" value="已填寫" checked class="text-emerald-600"> <span class="text-sm font-bold text-emerald-700">已填寫</span>
+                            </label>
+                            <label class="flex-1 cursor-pointer border border-blue-200 bg-blue-50 rounded-lg p-2 flex items-center justify-center gap-2 hover:bg-blue-100">
+                                <input type="radio" name="auditType" value="本月無更新" class="text-blue-600"> <span class="text-sm font-bold text-blue-700">本月無更新</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex gap-2 text-sm font-bold">
-                        <span class="flex items-center gap-1"><i class="ri-checkbox-circle-fill text-emerald-500"></i> 已確認 <span id="countConfirmed" class="text-emerald-600">0</span></span>
-                        <span class="flex items-center gap-1"><i class="ri-close-circle-fill text-rose-500"></i> 未確認 <span id="countPending" class="text-rose-600">0</span></span>
+                
+                <!-- 勾選區 -->
+                <div id="unitCheckArea" class="border-t border-slate-100 pt-4 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-400">請勾選要確認的單位：</span>
+                        <button onclick="toggleAllUnits()" class="text-xs text-blue-500 font-bold hover:underline">全選 / 反選</button>
                     </div>
-                    <button class="btn btn-white" onclick="loadHistory(true)"><i class="ri-refresh-line"></i> 重新檢查</button>
+                    <div id="unitCheckboxGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4"></div>
+                    <div class="flex justify-end">
+                        <button onclick="submitAudit()" class="btn btn-blue shadow-lg px-6">送出確認 <i class="ri-send-plane-fill ml-1"></i></button>
+                    </div>
                 </div>
             </div>
-            
-            <div class="flex-1 overflow-y-auto pr-2" id="auditContainer">
-                <!-- 動態生成稽核卡片 -->
+
+            <!-- 已確認清單 -->
+            <div class="flex-1 overflow-y-auto">
+                <h3 class="font-bold text-slate-700 mb-3 text-sm flex items-center gap-2"><i class="ri-history-line"></i> 本月已確認紀錄</h3>
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-500 font-bold"><tr><th class="px-4 py-2">單位</th><th class="px-4 py-2">狀態</th><th class="px-4 py-2">確認時間</th></tr></thead>
+                        <tbody id="auditLogBody" class="divide-y divide-slate-100"><tr><td colspan="3" class="p-4 text-center text-slate-400">尚無紀錄</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -146,7 +212,7 @@
             </div>
         </div>
 
-        <!-- D: 成果展示 (略，保持原樣) -->
+        <!-- D: 成果展示 (略) -->
         <div id="page-gallery" class="hidden flex-1 flex-col p-6 overflow-hidden h-full bg-slate-50">
             <div class="flex justify-between items-center mb-6 shrink-0">
                 <div class="flex items-center gap-2"><span class="w-1 h-6 bg-yellow-400 rounded-full"></span><h2 class="text-xl font-bold text-slate-800">成果展示牆</h2></div>
@@ -159,7 +225,7 @@
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="processCSV(this)">
     <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(this)">
     
-    <!-- 日曆 Modal (略，保持原樣) -->
+    <!-- 日曆 Modal (保持原樣) -->
     <div id="calendarModal" class="fixed inset-0 bg-black/50 hidden z-[1000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[350px] p-5 rounded-2xl shadow-2xl">
             <div class="flex justify-between items-center mb-2">
@@ -174,126 +240,204 @@
 
     <script>
         const $ = (s) => document.querySelector(s);
-        let inputData=[], historyData=[], auditLogs={}; // auditLogs 存 { "第一大隊_中正中隊": true }
+        let inputData=[], historyData=[], auditLogs={}; 
         let currentCalRow=null, selectedDates=new Set(), currentYear=2025, currentMonth=1;
         let uploadTarget=null;
 
         window.onload = function() { 
             addInputRow(); 
-            // 預設載入稽核與歷史
             loadHistory(true); 
             
-            // 設定當月標題
             const now = new Date();
-            const rocY = now.getFullYear() - 1911;
-            const m = now.getMonth() + 1;
-            $('#auditMonthLabel').innerText = `統計月份：${rocY}年 ${m}月 (本月)`;
+            const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            $('#auditMonthLabel').innerText = `統計月份：${now.getFullYear()-1911}年 ${now.getMonth()+1}月 (${ym})`;
+            
+            // 初始化選單
+            initAuditDropdowns();
         };
 
         function switchPage(page) {
             document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
             if(document.getElementById(`nav-${page}`)) document.getElementById(`nav-${page}`).classList.add('active');
-            
-            ['input','audit','history','gallery'].forEach(p => {
-                const el = $(`#page-${p}`);
-                el.classList.add('hidden'); el.classList.remove('flex');
-            });
-            
-            const target = $(`#page-${page}`);
-            target.classList.remove('hidden');
+            ['input','audit','history','gallery'].forEach(p => { $(`#page-${p}`).classList.add('hidden'); $(`#page-${p}`).classList.remove('flex'); });
+            const target = $(`#page-${page}`); target.classList.remove('hidden');
             if(page !== 'input') target.classList.add('flex');
-            if(page === 'audit') renderAuditBoard();
             if(page === 'gallery') renderGallery();
         }
 
-        // === 核心：稽核邏輯 ===
-        function renderAuditBoard() {
-            const container = $('#auditContainer');
-            container.innerHTML = '';
-            
-            let confirmedCount = 0;
-            let pendingCount = 0;
+        // ============================
+        // 稽核邏輯 (核心)
+        // ============================
+        function initAuditDropdowns() {
+            const selBat = $('#selBat');
+            selBat.innerHTML = '<option value="">請選擇大隊...</option>';
+            Object.keys(AUDIT_UNITS).forEach(bat => {
+                selBat.innerHTML += `<option value="${bat}">${bat}</option>`;
+            });
+        }
 
-            // 取得當月 Key (格式: 2025-01)
+        function renderSquadSelect() {
+            const bat = $('#selBat').value;
+            const selSquad = $('#selSquad');
+            const area = $('#unitCheckArea');
+            
+            area.classList.add('hidden');
+            selSquad.innerHTML = '<option value="">請選擇中隊...</option>';
+            selSquad.disabled = true;
+
+            if(bat) {
+                selSquad.disabled = false;
+                selSquad.innerHTML += '<option value="ALL">全部顯示</option>';
+                Object.keys(AUDIT_UNITS[bat]).forEach(sq => {
+                    selSquad.innerHTML += `<option value="${sq}">${sq}</option>`;
+                });
+            }
+        }
+
+        function renderUnitCheckboxes() {
+            const bat = $('#selBat').value;
+            const sq = $('#selSquad').value;
+            const grid = $('#unitCheckboxGrid');
+            const area = $('#unitCheckArea');
+
+            if(!bat || !sq) { area.classList.add('hidden'); return; }
+            
+            area.classList.remove('hidden');
+            grid.innerHTML = '';
+
+            let unitsToShow = [];
+            if(sq === 'ALL') {
+                // 顯示該大隊下所有中隊的所有分隊
+                Object.values(AUDIT_UNITS[bat]).forEach(arr => unitsToShow.push(...arr));
+            } else {
+                unitsToShow = AUDIT_UNITS[bat][sq];
+            }
+
+            unitsToShow.forEach(u => {
+                const div = document.createElement('div');
+                div.className = 'audit-card';
+                div.innerHTML = `
+                    <label class="flex items-center gap-2 cursor-pointer w-full">
+                        <input type="checkbox" name="auditUnit" value="${u}" class="w-4 h-4 text-blue-600 rounded">
+                        <span class="text-sm font-bold text-slate-700 select-none">${u}</span>
+                    </label>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function toggleAllUnits() {
+            const checkboxes = document.querySelectorAll('input[name="auditUnit"]');
+            const allChecked = Array.from(checkboxes).every(c => c.checked);
+            checkboxes.forEach(c => c.checked = !allChecked);
+        }
+
+        function submitAudit() {
+            const checked = Array.from(document.querySelectorAll('input[name="auditUnit"]:checked')).map(c => c.value);
+            if(checked.length === 0) return alert('請至少勾選一個單位');
+
+            const type = document.querySelector('input[name="auditType"]:checked').value;
             const now = new Date();
             const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-            // 依大隊產生區塊
-            for (const [groupName, units] of Object.entries(ALL_UNITS)) {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'mb-6';
-                groupDiv.innerHTML = `<h3 class="text-sm font-bold text-slate-500 mb-2 uppercase tracking-wider">${groupName}</h3>`;
-                
-                const gridDiv = document.createElement('div');
-                gridDiv.className = 'audit-grid';
+            // 準備批次資料
+            const payload = checked.map(u => ({ ym: ym, unit: u, type: type }));
 
-                units.forEach(unit => {
-                    // 檢查是否已確認 (從後端撈回來的 auditLogs 比對)
-                    const isConfirmed = auditLogs[`${ym}_${unit}`] === true;
-                    if(isConfirmed) confirmedCount++; else pendingCount++;
-
-                    const card = document.createElement('div');
-                    card.className = `audit-card ${isConfirmed ? 'confirmed' : 'pending'}`;
-                    card.innerHTML = `
-                        <i class="${isConfirmed ? 'ri-checkbox-circle-fill' : 'ri-close-circle-line'} status-icon"></i>
-                        <div class="font-bold text-sm">${unit}</div>
-                        <div class="text-xs mt-1 opacity-75">${isConfirmed ? '已確認' : '未確認'}</div>
-                    `;
-                    // 點擊切換狀態
-                    card.onclick = () => toggleAuditStatus(ym, unit, !isConfirmed);
-                    gridDiv.appendChild(card);
-                });
-
-                groupDiv.appendChild(gridDiv);
-                container.appendChild(groupDiv);
-            }
-
-            $('#countConfirmed').innerText = confirmedCount;
-            $('#countPending').innerText = pendingCount;
-        }
-
-        function toggleAuditStatus(ym, unit, newStatus) {
-            showLoading("更新狀態中...");
+            showLoading("送出確認中...");
             fetch(GAS_API_URL, {
                 method: 'POST',
-                body: JSON.stringify({ mode: 'update_audit', data: { ym, unit, status: newStatus } }),
+                body: JSON.stringify({ mode: 'update_audit', data: payload }),
                 headers: { 'Content-Type': 'text/plain' }
             })
             .then(res => res.json())
             .then(json => {
                 if(json.status === 'success') {
-                    // 更新本地快取
-                    if(newStatus) auditLogs[`${ym}_${unit}`] = true;
-                    else delete auditLogs[`${ym}_${unit}`];
-                    renderAuditBoard(); // 重繪
-                } else { alert('更新失敗'); }
+                    alert(`成功確認 ${json.count} 筆資料`);
+                    // 更新本地顯示
+                    checked.forEach(u => auditLogs[`${ym}_${u}`] = type);
+                    renderAlertBanner(); // 更新上方警示
+                    updateAuditLogTable(); // 更新下方列表
+                    // 清空勾選
+                    document.querySelectorAll('input[name="auditUnit"]').forEach(c => c.checked = false);
+                } else alert('失敗');
             })
-            .catch(e => alert('連線錯誤'))
             .finally(() => hideLoading());
         }
 
-        // === 資料存取 ===
-        function loadHistory(refreshAudit = false) {
+        // ============================
+        // 警示與載入
+        // ============================
+        function loadHistory(refresh = false) {
             if(GAS_API_URL.includes("請填入")) return;
             showLoading("資料同步中...");
-            
             fetch(GAS_API_URL).then(r => r.json()).then(json => {
                 if (json.status === 'success') {
                     historyData = json.data;
                     historyData.forEach(r => r.date = fixYearFormat(r.date));
                     
-                    // 處理稽核資料: 轉成 { "2025-01_華山分隊": true } 的格式
                     if(json.audit) {
                         auditLogs = {};
-                        json.audit.forEach(log => {
-                            auditLogs[`${log.ym}_${log.unit}`] = true;
-                        });
+                        json.audit.forEach(log => auditLogs[`${log.ym}_${log.unit}`] = log.type);
                     }
-
                     renderHistoryTable();
-                    if(refreshAudit) renderAuditBoard();
+                    renderAlertBanner();
+                    updateAuditLogTable();
                 }
             }).finally(() => hideLoading());
+        }
+
+        function renderAlertBanner() {
+            const now = new Date();
+            const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            const rocYm = `${now.getFullYear()-1911}年${now.getMonth()+1}月`;
+            
+            let missing = [];
+            
+            // 遍歷所有應填報單位
+            for (const [bat, squads] of Object.entries(AUDIT_UNITS)) {
+                let batMissing = [];
+                Object.values(squads).flat().forEach(u => {
+                    if (!auditLogs[`${ym}_${u}`]) batMissing.push(u);
+                });
+                if (batMissing.length > 0) {
+                    missing.push(`<strong>${bat}</strong>：${batMissing.join('、')}`);
+                }
+            }
+
+            const banner = $('#alertBanner');
+            if (missing.length > 0) {
+                banner.classList.remove('hidden');
+                $('#alertTitle').innerText = `⚠️ ${rocYm} 尚未結案提醒 (剩餘 ${missing.reduce((acc,s)=>acc+s.split('、').length,0) - missing.length} 個單位)`;
+                $('#alertContent').innerHTML = missing.join('<br>');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        function updateAuditLogTable() {
+            const tbody = $('#auditLogBody');
+            const now = new Date();
+            const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            
+            // 篩選本月已確認的
+            const logs = Object.entries(auditLogs)
+                .filter(([k, v]) => k.startsWith(ym))
+                .map(([k, v]) => ({ unit: k.split('_')[1], type: v }));
+
+            if(logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">本月尚無確認紀錄</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = logs.map(l => {
+                const color = l.type === '已填寫' ? 'text-emerald-600 bg-emerald-50' : 'text-blue-600 bg-blue-50';
+                return `
+                    <tr class="border-b border-slate-100 last:border-0">
+                        <td class="px-4 py-2 font-bold text-slate-700">${l.unit}</td>
+                        <td class="px-4 py-2"><span class="px-2 py-1 rounded text-xs font-bold ${color}">${l.type}</span></td>
+                        <td class="px-4 py-2 text-xs text-slate-400">已同步</td>
+                    </tr>`;
+            }).join('');
         }
 
         // 其他基礎函式 (新增、刪除列、日曆等) 保持原樣
@@ -325,7 +469,7 @@
         function hideLoading() { $('#loading').style.display='none'; }
         function fixYearFormat(s) { return s?s.replace(/^0+(11\d)/,'$1'):""; }
         function triggerUpload(i) { uploadTarget=historyData[i]; $('#photoInput').click(); }
-        async function handlePhotoUpload(inp) { /* 同上個版本，省略以節省篇幅 */ }
+        async function handlePhotoUpload(inp) { /* 同上個版本 */ }
         function downloadTemplate() { saveAs(new Blob(["日期,單位,地點,項目,場次,人數,備註\n114年1月1日,信義中隊,駐地,訓練,1,20,"],{type:'text/csv'}), "範本.csv"); }
         function processCSV(inp) { /* 同上個版本 */ }
         
