@@ -104,7 +104,7 @@
             <div class="mt-1 bg-rose-100 p-1.5 rounded-full"><i class="ri-alarm-warning-fill text-rose-500 text-lg"></i></div>
             <div class="flex-1">
                 <h3 class="font-bold text-rose-800 text-sm mb-1 flex items-center gap-2">
-                    <span id="alertTitle">尚未結案提醒</span>
+                    <span id="alertTitle">114年1月 尚未結案提醒</span>
                     <button onclick="loadHistory(true)" class="text-xs bg-white border border-rose-200 px-2 py-0.5 rounded hover:bg-rose-50"><i class="ri-refresh-line"></i> 重整</button>
                 </h3>
                 <div class="text-xs text-rose-600 leading-relaxed" id="alertContent">載入中...</div>
@@ -177,7 +177,22 @@
                 <div class="flex items-center gap-2"><span class="w-1 h-6 bg-emerald-600 rounded-full"></span><h2 class="text-xl font-bold text-slate-800">歷史資料庫</h2></div>
                 <div class="flex gap-2">
                     <button class="btn btn-white" onclick="loadHistory()"><i class="ri-refresh-line"></i> 重整</button>
-                    <button class="btn btn-green" onclick="exportExcel('full')"><i class="ri-file-excel-2-line"></i> 匯出</button>
+                    <!-- ★ 修正：恢復下拉選單按鈕 -->
+                    <div class="relative group">
+                        <button class="btn btn-green">
+                            <i class="ri-file-excel-2-line"></i> 下載報表
+                        </button>
+                        <div class="absolute right-0 top-full pt-2 w-56 hidden group-hover:block z-50">
+                            <div class="bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden p-1">
+                                <div onclick="exportExcel('report')" class="px-4 py-3 hover:bg-emerald-50 rounded-lg cursor-pointer text-sm font-bold text-emerald-700 mb-1 flex items-center transition">
+                                    <i class="ri-file-list-3-line mr-2 text-lg"></i>陳報上級版 (精簡)
+                                </div>
+                                <div onclick="exportExcel('full')" class="px-4 py-3 hover:bg-slate-50 rounded-lg cursor-pointer text-sm text-slate-600 flex items-center transition">
+                                    <i class="ri-database-2-line mr-2 text-lg"></i>完整資料庫 (備份)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-xl mb-4 flex gap-6 text-sm text-emerald-800 font-bold shadow-sm shrink-0">
@@ -276,14 +291,12 @@
         function fixYearFormat(val) {
             if (!val) return "";
             if (typeof val === 'string') {
-                // 如果是 "0114年" 開頭，去除前面的 0
                 if (val.match(/^0+(1\d{2}年)/)) {
                     return val.replace(/^0+(1\d{2}年)/, '$1');
                 }
                 if (val.includes('年')) return val;
             }
             
-            // 解析 ISO 時間
             const d = new Date(val);
             if (!isNaN(d.getTime())) {
                 let y = d.getFullYear();
@@ -605,6 +618,7 @@
             const container = $('#galleryGrid');
             container.innerHTML = '';
 
+            // ★ 修正重點：區分「最新」與「隨機」邏輯
             let withPhotos = historyData.filter(r => r.coverUrl);
             let withoutPhotos = historyData.filter(r => !r.coverUrl);
             let displayList = [];
@@ -613,9 +627,9 @@
                 // 最新：依日期新到舊 (historyData 預設已經排好了，直接取前24)
                 displayList = [...withPhotos, ...withoutPhotos].slice(0, 24);
             } else {
-                // 隨機：完全打亂
-                let all = [...withPhotos, ...withoutPhotos];
-                displayList = all.sort(() => Math.random() - 0.5).slice(0, 24);
+                // 隨機：複製一份來洗牌
+                let shuffled = [...withPhotos, ...withoutPhotos].sort(() => Math.random() - 0.5);
+                displayList = shuffled.slice(0, 24);
             }
 
             displayList.forEach(item => {
