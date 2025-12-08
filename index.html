@@ -20,26 +20,26 @@
         const AUDIT_UNITS = {
             "第一大隊": {
                 "本部": ["第一救災救護大隊"],
-                "中正中隊": ["中正中隊", "華山分隊", "泉州分隊", "古亭分隊", "城中分隊"], // 排除忠孝
+                "中正中隊": ["中正中隊", "華山分隊", "泉州分隊", "古亭分隊", "城中分隊"], 
                 "萬華中隊": ["萬華中隊", "雙園分隊", "龍山分隊"],
                 "文山中隊": ["文山中隊", "萬芳分隊", "景美分隊", "木柵分隊", "寶橋分隊"]
             },
             "第二大隊": {
                 "本部": ["第二救災救護大隊"],
                 "大安中隊": ["大安中隊", "金華分隊", "復興分隊", "安和分隊"],
-                "信義中隊": ["信義中隊", "信義分隊", "莊敬分隊"], // 排除永吉
+                "信義中隊": ["信義中隊", "信義分隊", "莊敬分隊"], 
                 "南港中隊": ["南港中隊", "南港分隊", "舊莊分隊", "成德分隊"]
             },
             "第三大隊": {
                 "本部": ["第三救災救護大隊"],
-                "中山中隊": ["中山中隊", "大直分隊", "圓山分隊", "松江分隊"], // 排除建國
+                "中山中隊": ["中山中隊", "大直分隊", "圓山分隊", "松江分隊"], 
                 "松山中隊": ["松山中隊", "中崙分隊", "八德分隊"],
                 "內湖中隊": ["內湖中隊", "民權分隊", "內湖分隊", "大湖分隊", "東湖分隊"]
             },
             "第四大隊": {
                 "本部": ["第四救災救護大隊"],
                 "大同中隊": ["大同中隊", "建成分隊", "延平分隊", "大同分隊"],
-                "士林中隊": ["士林中隊", "山仔后分隊", "天母分隊", "福安分隊", "社子分隊", "劍潭分隊", "雙溪分隊"], // 排除後港
+                "士林中隊": ["士林中隊", "山仔后分隊", "天母分隊", "福安分隊", "社子分隊", "劍潭分隊", "雙溪分隊"], 
                 "北投中隊": ["北投中隊", "陽明山分隊", "光明分隊", "關渡分隊", "石牌分隊", "秀山分隊"]
             }
         };
@@ -93,36 +93,79 @@
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <div onclick="switchPage('input')" id="nav-input" class="sidebar-link active px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-edit-2-line text-xl"></i> 新增作業區</div>
-            <div onclick="switchPage('audit')" id="nav-audit" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-checkbox-circle-line text-xl text-yellow-400"></i> 填報稽核</div>
+            <!-- 移除獨立的填報稽核按鈕 -->
             <div onclick="switchPage('history')" id="nav-history" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-database-2-line text-xl"></i> 歷史資料庫</div>
-            <div onclick="switchPage('gallery')" id="nav-gallery" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-gallery-view-2 text-xl text-sky-400"></i> 成果展示</div>
+            <div onclick="switchPage('gallery')" id="nav-gallery" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-gallery-view-2 text-xl text-yellow-400"></i> 成果展示</div>
         </nav>
-        <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">v2.5 (排除高救隊)</div>
+        <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">
+            <!-- 版本號已移除 -->
+        </div>
     </aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative min-w-0">
         <!-- 手機 Header 略 -->
 
-        <!-- ★ 頂部警告 Banner (未結案提醒) -->
-        <div id="alertBanner" class="bg-rose-50 border-b border-rose-200 px-6 py-3 flex items-start gap-3 hidden">
-            <i class="ri-alarm-warning-fill text-rose-500 text-xl mt-0.5"></i>
+        <!-- ★ 1. 頂部警告 Banner (未結案提醒) -->
+        <div id="alertBanner" class="bg-rose-50 border-b border-rose-200 px-6 py-4 flex items-start gap-3 hidden shadow-sm shrink-0">
+            <div class="mt-1 bg-rose-100 p-1.5 rounded-full"><i class="ri-alarm-warning-fill text-rose-500 text-lg"></i></div>
             <div class="flex-1">
-                <h3 class="font-bold text-rose-800 text-sm mb-1" id="alertTitle">114年1月 尚未結案提醒</h3>
+                <h3 class="font-bold text-rose-800 text-sm mb-1 flex items-center gap-2">
+                    <span id="alertTitle">114年1月 尚未結案提醒</span>
+                    <button onclick="loadHistory(true)" class="text-xs bg-white border border-rose-200 px-2 py-0.5 rounded hover:bg-rose-50"><i class="ri-refresh-line"></i> 重整</button>
+                </h3>
                 <div class="text-xs text-rose-600 leading-relaxed" id="alertContent">載入中...</div>
             </div>
-            <button onclick="$('#alertBanner').classList.add('hidden')" class="text-rose-400 hover:text-rose-700"><i class="ri-close-line text-lg"></i></button>
         </div>
 
         <!-- A: 新增作業區 -->
         <div id="page-input" class="flex-1 flex flex-col p-6 overflow-hidden h-full">
+            
+            <!-- ★ 2. 填報確認列 (嵌入式) -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm shrink-0">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-1 h-5 bg-yellow-500 rounded-full"></span>
+                    <h3 class="font-bold text-slate-700 text-sm">本月填報確認 <span class="text-xs font-normal text-slate-400 ml-1">(請勾選單位並送出)</span></h3>
+                </div>
+                
+                <div class="flex flex-wrap items-end gap-3">
+                    <div class="flex-1 min-w-[140px]">
+                        <label class="text-[10px] font-bold text-slate-400 block mb-1">選擇大隊</label>
+                        <select id="selBat" onchange="renderSquadSelect()" class="w-full border border-slate-300 rounded-lg p-1.5 text-sm bg-slate-50 font-bold outline-none focus:border-blue-500"><option value="">大隊...</option></select>
+                    </div>
+                    <div class="flex-1 min-w-[140px]">
+                        <label class="text-[10px] font-bold text-slate-400 block mb-1">選擇中隊</label>
+                        <select id="selSquad" onchange="renderUnitCheckboxes()" class="w-full border border-slate-300 rounded-lg p-1.5 text-sm bg-slate-50 font-bold outline-none focus:border-blue-500" disabled><option value="">請先選大隊</option></select>
+                    </div>
+                    <div class="w-[200px]">
+                        <label class="text-[10px] font-bold text-slate-400 block mb-1">狀態</label>
+                        <div class="flex bg-slate-100 p-1 rounded-lg">
+                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="auditType" value="已填寫" checked class="hidden peer"><span class="block text-xs py-1 rounded peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm peer-checked:font-bold text-slate-500 transition">已填寫</span></label>
+                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="auditType" value="本月無更新" class="hidden peer"><span class="block text-xs py-1 rounded peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm peer-checked:font-bold text-slate-500 transition">本月無更新</span></label>
+                        </div>
+                    </div>
+                    <button onclick="submitAudit()" class="bg-slate-800 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-slate-700 active:scale-95 transition h-[34px] flex items-center gap-1"><i class="ri-check-double-line"></i> 送出確認</button>
+                </div>
+
+                <!-- 動態勾選區 -->
+                <div id="unitCheckArea" class="mt-3 pt-3 border-t border-slate-100 hidden">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-xs text-slate-400">勾選單位 (可多選)：</span>
+                        <button onclick="toggleAllUnits()" class="text-xs text-blue-500 hover:underline">全選</button>
+                    </div>
+                    <div id="unitCheckboxGrid" class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2"></div>
+                </div>
+            </div>
+
+            <!-- 原有功能：表格工具列 -->
             <div class="flex justify-between items-center mb-4 shrink-0">
                 <div class="flex items-center gap-2"><span class="w-1 h-6 bg-blue-600 rounded-full"></span><h2 class="text-xl font-bold text-slate-800">新增作業區</h2></div>
                 <div class="flex gap-2">
                     <button class="btn btn-white" onclick="downloadTemplate()"><i class="ri-file-download-line"></i> 下載範本</button>
-                    <button class="btn btn-white" onclick="$('#csvInput').click()"><i class="ri-upload-2-line"></i> 匯入</button>
+                    <button class="btn btn-white" onclick="$('#csvInput').click()"><i class="ri-upload-2-line"></i> 匯入 CSV</button>
                     <button class="btn btn-blue" onclick="saveToCloud()"><i class="ri-cloud-upload-line"></i> 儲存</button>
                 </div>
             </div>
+            
             <div class="table-wrapper">
                 <table id="inputTable">
                     <thead><tr><th style="width:50px">刪</th><th style="width:50px">序</th><th style="width:220px">日期</th><th style="width:150px">單位</th><th style="width:200px">地點</th><th style="width:200px">項目</th><th style="width:80px">場次</th><th style="width:80px">人數</th><th style="width:150px">備註</th></tr></thead>
@@ -131,65 +174,6 @@
                 </table>
             </div>
             <div class="mt-4 flex justify-center shrink-0"><button class="btn btn-white" onclick="addInputRow()"><i class="ri-add-line"></i> 新增一列</button></div>
-        </div>
-
-        <!-- ★ B: 填報稽核 (嵌入式) -->
-        <div id="page-audit" class="hidden flex-1 flex-col p-6 overflow-hidden h-full bg-slate-50">
-            <div class="flex justify-between items-center mb-4 shrink-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-1 h-6 bg-yellow-500 rounded-full"></span>
-                    <div><h2 class="text-xl font-bold text-slate-800">填報稽核確認</h2><p class="text-xs text-slate-500 mt-0.5" id="auditMonthLabel">統計月份：...</p></div>
-                </div>
-                <button class="btn btn-white" onclick="loadHistory(true)"><i class="ri-refresh-line"></i> 重新檢查</button>
-            </div>
-
-            <!-- 操作區 -->
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">1. 選擇大隊</label>
-                        <select id="selBat" onchange="renderSquadSelect()" class="w-full border border-slate-300 rounded-lg p-2 text-sm font-bold bg-slate-50"><option value="">請選擇...</option></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">2. 選擇中隊 (或全部)</label>
-                        <select id="selSquad" onchange="renderUnitCheckboxes()" class="w-full border border-slate-300 rounded-lg p-2 text-sm font-bold bg-slate-50" disabled><option value="">請先選大隊</option></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">3. 選擇狀態</label>
-                        <div class="flex gap-2">
-                            <label class="flex-1 cursor-pointer border border-emerald-200 bg-emerald-50 rounded-lg p-2 flex items-center justify-center gap-2 hover:bg-emerald-100">
-                                <input type="radio" name="auditType" value="已填寫" checked class="text-emerald-600"> <span class="text-sm font-bold text-emerald-700">已填寫</span>
-                            </label>
-                            <label class="flex-1 cursor-pointer border border-blue-200 bg-blue-50 rounded-lg p-2 flex items-center justify-center gap-2 hover:bg-blue-100">
-                                <input type="radio" name="auditType" value="本月無更新" class="text-blue-600"> <span class="text-sm font-bold text-blue-700">本月無更新</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 勾選區 -->
-                <div id="unitCheckArea" class="border-t border-slate-100 pt-4 hidden">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-slate-400">請勾選要確認的單位：</span>
-                        <button onclick="toggleAllUnits()" class="text-xs text-blue-500 font-bold hover:underline">全選 / 反選</button>
-                    </div>
-                    <div id="unitCheckboxGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4"></div>
-                    <div class="flex justify-end">
-                        <button onclick="submitAudit()" class="btn btn-blue shadow-lg px-6">送出確認 <i class="ri-send-plane-fill ml-1"></i></button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 已確認清單 -->
-            <div class="flex-1 overflow-y-auto">
-                <h3 class="font-bold text-slate-700 mb-3 text-sm flex items-center gap-2"><i class="ri-history-line"></i> 本月已確認紀錄</h3>
-                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 text-slate-500 font-bold"><tr><th class="px-4 py-2">單位</th><th class="px-4 py-2">狀態</th><th class="px-4 py-2">確認時間</th></tr></thead>
-                        <tbody id="auditLogBody" class="divide-y divide-slate-100"><tr><td colspan="3" class="p-4 text-center text-slate-400">尚無紀錄</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
         <!-- C: 歷史資料庫 -->
@@ -210,9 +194,13 @@
                     <tbody id="historyBody"></tbody>
                 </table>
             </div>
+            <div class="h-[60px] flex items-center justify-between border-t border-slate-200 pt-3 mt-2 shrink-0 bg-slate-100">
+                <div class="text-sm text-slate-500">顯示第 <span id="pageInfoStart" class="font-bold">0</span> - <span id="pageInfoEnd" class="font-bold">0</span> 筆</div>
+                <div class="flex gap-2"><button onclick="changePage(-1)" id="prevBtn" class="px-3 py-1 border rounded bg-white">上一頁</button><button onclick="changePage(1)" id="nextBtn" class="px-3 py-1 border rounded bg-white">下一頁</button></div>
+            </div>
         </div>
 
-        <!-- D: 成果展示 (略) -->
+        <!-- D: 成果展示 -->
         <div id="page-gallery" class="hidden flex-1 flex-col p-6 overflow-hidden h-full bg-slate-50">
             <div class="flex justify-between items-center mb-6 shrink-0">
                 <div class="flex items-center gap-2"><span class="w-1 h-6 bg-yellow-400 rounded-full"></span><h2 class="text-xl font-bold text-slate-800">成果展示牆</h2></div>
@@ -225,7 +213,7 @@
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="processCSV(this)">
     <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(this)">
     
-    <!-- 日曆 Modal (保持原樣) -->
+    <!-- 日曆 Modal -->
     <div id="calendarModal" class="fixed inset-0 bg-black/50 hidden z-[1000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[350px] p-5 rounded-2xl shadow-2xl">
             <div class="flex justify-between items-center mb-2">
@@ -242,31 +230,25 @@
         const $ = (s) => document.querySelector(s);
         let inputData=[], historyData=[], auditLogs={}; 
         let currentCalRow=null, selectedDates=new Set(), currentYear=2025, currentMonth=1;
-        let uploadTarget=null;
+        let currentPage = 1, itemsPerPage = 20, uploadTarget=null;
 
         window.onload = function() { 
             addInputRow(); 
-            loadHistory(true); 
-            
-            const now = new Date();
-            const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-            $('#auditMonthLabel').innerText = `統計月份：${now.getFullYear()-1911}年 ${now.getMonth()+1}月 (${ym})`;
-            
-            // 初始化選單
-            initAuditDropdowns();
+            initAuditDropdowns(); // 初始化稽核選單
+            loadHistory(true);    // 載入資料並檢查 Alert
         };
 
         function switchPage(page) {
             document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
             if(document.getElementById(`nav-${page}`)) document.getElementById(`nav-${page}`).classList.add('active');
-            ['input','audit','history','gallery'].forEach(p => { $(`#page-${p}`).classList.add('hidden'); $(`#page-${p}`).classList.remove('flex'); });
+            ['input','history','gallery'].forEach(p => { $(`#page-${p}`).classList.add('hidden'); $(`#page-${p}`).classList.remove('flex'); });
             const target = $(`#page-${page}`); target.classList.remove('hidden');
             if(page !== 'input') target.classList.add('flex');
             if(page === 'gallery') renderGallery();
         }
 
         // ============================
-        // 稽核邏輯 (核心)
+        // 嵌入式稽核 (Check-in) 邏輯
         // ============================
         function initAuditDropdowns() {
             const selBat = $('#selBat');
@@ -307,21 +289,30 @@
 
             let unitsToShow = [];
             if(sq === 'ALL') {
-                // 顯示該大隊下所有中隊的所有分隊
                 Object.values(AUDIT_UNITS[bat]).forEach(arr => unitsToShow.push(...arr));
             } else {
                 unitsToShow = AUDIT_UNITS[bat][sq];
             }
 
+            // 取得本月 Key
+            const now = new Date();
+            const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
             unitsToShow.forEach(u => {
+                // 檢查是否已確認
+                const isChecked = auditLogs[`${ym}_${u}`] === true || auditLogs[`${ym}_${u}`] === '已填寫' || auditLogs[`${ym}_${u}`] === '本月無更新';
+                
                 const div = document.createElement('div');
-                div.className = 'audit-card';
-                div.innerHTML = `
-                    <label class="flex items-center gap-2 cursor-pointer w-full">
+                // 如果已確認，顯示綠色且禁用
+                if(isChecked) {
+                    div.innerHTML = `<div class="bg-emerald-50 border border-emerald-200 text-emerald-600 rounded px-2 py-1 text-xs font-bold flex items-center justify-center gap-1 opacity-60 cursor-not-allowed"><i class="ri-checkbox-circle-fill"></i> ${u} (已結案)</div>`;
+                } else {
+                    div.innerHTML = `
+                    <label class="flex items-center gap-2 cursor-pointer border border-slate-200 rounded px-2 py-1 hover:bg-slate-50 transition">
                         <input type="checkbox" name="auditUnit" value="${u}" class="w-4 h-4 text-blue-600 rounded">
-                        <span class="text-sm font-bold text-slate-700 select-none">${u}</span>
-                    </label>
-                `;
+                        <span class="text-xs font-bold text-slate-700 select-none">${u}</span>
+                    </label>`;
+                }
                 grid.appendChild(div);
             });
         }
@@ -340,7 +331,6 @@
             const now = new Date();
             const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-            // 準備批次資料
             const payload = checked.map(u => ({ ym: ym, unit: u, type: type }));
 
             showLoading("送出確認中...");
@@ -352,13 +342,11 @@
             .then(res => res.json())
             .then(json => {
                 if(json.status === 'success') {
-                    alert(`成功確認 ${json.count} 筆資料`);
-                    // 更新本地顯示
+                    // 更新本地
                     checked.forEach(u => auditLogs[`${ym}_${u}`] = type);
-                    renderAlertBanner(); // 更新上方警示
-                    updateAuditLogTable(); // 更新下方列表
-                    // 清空勾選
-                    document.querySelectorAll('input[name="auditUnit"]').forEach(c => c.checked = false);
+                    renderAlertBanner(); // 立即更新上方 Banner
+                    renderUnitCheckboxes(); // 立即刷新勾選區
+                    alert(`成功確認 ${json.count} 個單位`);
                 } else alert('失敗');
             })
             .finally(() => hideLoading());
@@ -369,7 +357,8 @@
         // ============================
         function loadHistory(refresh = false) {
             if(GAS_API_URL.includes("請填入")) return;
-            showLoading("資料同步中...");
+            if(refresh) showLoading("資料同步中...");
+            
             fetch(GAS_API_URL).then(r => r.json()).then(json => {
                 if (json.status === 'success') {
                     historyData = json.data;
@@ -381,7 +370,7 @@
                     }
                     renderHistoryTable();
                     renderAlertBanner();
-                    updateAuditLogTable();
+                    renderUnitCheckboxes(); 
                 }
             }).finally(() => hideLoading());
         }
@@ -392,8 +381,7 @@
             const rocYm = `${now.getFullYear()-1911}年${now.getMonth()+1}月`;
             
             let missing = [];
-            
-            // 遍歷所有應填報單位
+            // 掃描 57 個單位
             for (const [bat, squads] of Object.entries(AUDIT_UNITS)) {
                 let batMissing = [];
                 Object.values(squads).flat().forEach(u => {
@@ -407,40 +395,15 @@
             const banner = $('#alertBanner');
             if (missing.length > 0) {
                 banner.classList.remove('hidden');
-                $('#alertTitle').innerText = `⚠️ ${rocYm} 尚未結案提醒 (剩餘 ${missing.reduce((acc,s)=>acc+s.split('、').length,0) - missing.length} 個單位)`;
+                const totalMissing = missing.reduce((acc,s)=>acc+s.split('、').length,0) - missing.length; 
+                $('#alertTitle').innerText = `⚠️ ${rocYm} 尚未結案提醒 (剩餘 ${totalMissing} 個單位)`;
                 $('#alertContent').innerHTML = missing.join('<br>');
             } else {
                 banner.classList.add('hidden');
             }
         }
 
-        function updateAuditLogTable() {
-            const tbody = $('#auditLogBody');
-            const now = new Date();
-            const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-            
-            // 篩選本月已確認的
-            const logs = Object.entries(auditLogs)
-                .filter(([k, v]) => k.startsWith(ym))
-                .map(([k, v]) => ({ unit: k.split('_')[1], type: v }));
-
-            if(logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">本月尚無確認紀錄</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = logs.map(l => {
-                const color = l.type === '已填寫' ? 'text-emerald-600 bg-emerald-50' : 'text-blue-600 bg-blue-50';
-                return `
-                    <tr class="border-b border-slate-100 last:border-0">
-                        <td class="px-4 py-2 font-bold text-slate-700">${l.unit}</td>
-                        <td class="px-4 py-2"><span class="px-2 py-1 rounded text-xs font-bold ${color}">${l.type}</span></td>
-                        <td class="px-4 py-2 text-xs text-slate-400">已同步</td>
-                    </tr>`;
-            }).join('');
-        }
-
-        // 其他基礎函式 (新增、刪除列、日曆等) 保持原樣
+        // === 基礎函式 (新增、刪除、分頁) ===
         function addInputRow() { inputData.push({date:'',unit:'',loc:'',item:'',session:'',people:'',note:''}); renderInputTable(); }
         function removeInputRow(i) { if(inputData.length>1) inputData.splice(i,1); else inputData[0]={date:'',unit:'',loc:'',item:'',session:'',people:'',note:''}; renderInputTable(); }
         function renderInputTable() { 
@@ -454,14 +417,21 @@
                 if(j.status==='success') { alert('儲存成功'); inputData=[]; addInputRow(); loadHistory(); } else alert('失敗');
             }).finally(()=>hideLoading());
         }
+        function changePage(d) {
+            const max = Math.ceil(historyData.length/itemsPerPage); currentPage+=d;
+            if(currentPage<1) currentPage=1; if(currentPage>max) currentPage=max;
+            renderHistoryTable();
+        }
         function renderHistoryTable() {
-            let s=0, p=0;
-            $('#historyBody').innerHTML = historyData.map((r,i) => {
-                s+=parseInt(r.session)||0; p+=parseInt(r.people)||0;
-                let btn = r.folderUrl ? `<a href="${r.folderUrl}" target="_blank" class="text-blue-600 underline">已建檔</a>` : `<button onclick="triggerUpload(${i})" class="text-slate-400 hover:text-blue-500"><i class="ri-camera-line"></i></button>`;
-                return `<tr class="${i%2?'bg-slate-50':'bg-white'}"><td class="text-center text-xs text-slate-400">${i+1}</td><td class="px-2">${r.date}</td><td class="px-2 text-sm">${r.unit}</td><td class="px-2 text-sm">${r.loc}</td><td class="px-2">${r.item}</td><td class="text-center font-bold text-blue-600">${r.session}</td><td class="text-center font-bold text-emerald-600">${r.people}</td><td class="px-2 text-xs text-slate-400">${r.note}</td><td class="text-center">${btn}</td></tr>`;
-            }).join('');
+            let s=0, p=0; historyData.forEach(r=>{s+=parseInt(r.session)||0; p+=parseInt(r.people)||0;});
             $('#histTotalSession').innerText=s; $('#histTotalPeople').innerText=p;
+            const start=(currentPage-1)*itemsPerPage, end=start+itemsPerPage;
+            $('#historyBody').innerHTML = historyData.slice(start,end).map((r,i) => {
+                let btn = r.folderUrl ? `<a href="${r.folderUrl}" target="_blank" class="text-blue-600 underline">已建檔</a>` : `<button onclick="triggerUpload(${start+i})" class="text-slate-400 hover:text-blue-500"><i class="ri-camera-line"></i></button>`;
+                return `<tr class="${i%2?'bg-slate-50':'bg-white'}"><td class="text-center text-xs text-slate-400">${start+i+1}</td><td class="px-2">${r.date}</td><td class="px-2 text-sm">${r.unit}</td><td class="px-2 text-sm">${r.loc}</td><td class="px-2">${r.item}</td><td class="text-center font-bold text-blue-600">${r.session}</td><td class="text-center font-bold text-emerald-600">${r.people}</td><td class="px-2 text-xs text-slate-400">${r.note}</td><td class="text-center">${btn}</td></tr>`;
+            }).join('');
+            $('#pageInfoStart').innerText=start+1; $('#pageInfoEnd').innerText=Math.min(end,historyData.length); 
+            $('#prevBtn').disabled=currentPage===1; $('#nextBtn').disabled=end>=historyData.length;
         }
         
         // 輔助功能
@@ -469,9 +439,9 @@
         function hideLoading() { $('#loading').style.display='none'; }
         function fixYearFormat(s) { return s?s.replace(/^0+(11\d)/,'$1'):""; }
         function triggerUpload(i) { uploadTarget=historyData[i]; $('#photoInput').click(); }
-        async function handlePhotoUpload(inp) { /* 同上個版本 */ }
-        function downloadTemplate() { saveAs(new Blob(["日期,單位,地點,項目,場次,人數,備註\n114年1月1日,信義中隊,駐地,訓練,1,20,"],{type:'text/csv'}), "範本.csv"); }
-        function processCSV(inp) { /* 同上個版本 */ }
+        async function handlePhotoUpload(inp) { /* 省略 */ }
+        function downloadTemplate() { saveAs(new Blob(["日期,單位,地點,項目,場次,人數,備註\n114年1月1日,信義中隊,駐地,滅火毯操作,1,15,範例"],{type:'text/csv'}), "範本.csv"); }
+        function processCSV(inp) { /* 省略 */ }
         
         // 日曆與匯出功能 (省略，保持原樣)
         function openCalendar(i){ currentCalRow=i; selectedDates.clear(); renderCalendarGrid(); $('#calendarModal').classList.remove('hidden'); $('#calendarModal').classList.add('flex'); }
