@@ -12,15 +12,14 @@
 
     <script>
         // ==========================================
-        // ⚠️【請填入您的 Google Apps Script 網址】(電動車系統專用)
+        // ⚠️【請填入您的 Google Apps Script 網址】
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwqsvGTpqNdMrzCZ46GwyPrkHFjU53PfJlgMRPB4G7avoRDGiIml6BoP_2uZY4QJ7dz/exec"; 
         
-        // 🔗 系統切換連結 (多元宇宙)
+        // 🔗 系統連結 (不包含本系統)
         const SYSTEM_LINKS = {
             portal: "https://tfd-train.github.io/Training-Management-Platform/", // 整合平台
             flow: "https://tfd-train.github.io/Training-Flow-Management/",       // 訓練流路
-            booking: "https://tfd-train.github.io/Facility-Booking/",            // 場地借用
-            ev: "https://tfd-train.github.io/Electric-Vehicle/"                  // 電動車 (本系統)
+            booking: "https://tfd-train.github.io/Facility-Booking/"             // 場地借用
         };
         // ==========================================
 
@@ -54,7 +53,7 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f1f5f9; }
+        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
         
         aside { transition: transform 0.3s ease-in-out; }
         .sidebar-open { transform: translateX(0); }
@@ -69,14 +68,15 @@
         table { width: 100%; min-width: 1100px; border-collapse: collapse; table-layout: fixed; }
         th { background: #f8fafc; color: #475569; font-weight: 700; padding: 10px; border: 1px solid #cbd5e1; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         
-        /* 表格高度與提示字調整 */
-        td { border: 1px solid #cbd5e1; height: auto; padding: 8px 4px; vertical-align: top; background: white; }
+        /* 表格高度與內距調整 */
+        td { border: 1px solid #cbd5e1; height: auto; padding: 6px 4px; vertical-align: top; background: white; }
         
-        input { width: 100%; height: 28px; border: none; text-align: center; outline: none; background: transparent; font-weight: 500; color: #1e293b; }
+        /* 輸入框樣式 */
+        input { width: 100%; height: 28px; border: none; text-align: center; outline: none; background: transparent; font-weight: 500; color: #1e293b; font-size: 14px; }
         input:focus { background: #eff6ff; border-radius: 4px; }
-        input::placeholder { color: #cbd5e1; font-weight: 400; font-size: 13px; }
         
-        .example-row td { background: #f1f5f9; color: #94a3b8; font-style: italic; pointer-events: none; padding: 12px 4px; }
+        /* 範例列 */
+        .example-row td { background: #f1f5f9; color: #94a3b8; font-style: italic; pointer-events: none; padding: 12px 4px; vertical-align: middle; }
         
         .btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.2s; font-size: 14px; }
         .btn-blue { background: #2563eb; color: white; } .btn-blue:hover { background: #1d4ed8; }
@@ -99,7 +99,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-slate-100 h-screen flex overflow-hidden">
+<body class="bg-slate-50 h-screen flex overflow-hidden">
     <div id="loading"><div class="spinner mb-4"></div><div class="font-bold text-lg" id="loadingText">資料處理中...</div></div>
 
     <aside id="mainSidebar" class="w-64 bg-slate-900 text-white flex-col fixed inset-y-0 left-0 z-30 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out shadow-2xl md:flex shrink-0">
@@ -116,16 +116,16 @@
             <div onclick="switchPage('history')" id="nav-history" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-database-2-line text-xl"></i> 歷史資料庫</div>
             <div onclick="switchPage('gallery')" id="nav-gallery" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-gallery-view-2 text-xl text-yellow-400"></i> 成果展示</div>
         
-            <!-- ★ 訓練系統多元宇宙區塊 ★ -->
+            <!-- ★ 系統快速連結 (底部) ★ -->
             <div class="pt-8 pb-2">
-                <div class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">訓練系統多元宇宙</div>
-                <a href="javascript:void(0)" onclick="location.href=SYSTEM_LINKS.portal" class="sidebar-link px-4 py-2 rounded-xl flex items-center gap-3 text-sm text-slate-400 hover:text-white mb-1">
+                <div class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">系統快速連結</div>
+                <a href="javascript:void(0)" onclick="location.href=SYSTEM_LINKS.portal" class="sidebar-link px-4 py-2.5 rounded-xl flex items-center gap-3 text-sm text-slate-400 hover:text-white mb-1 transition">
                     <i class="ri-apps-2-line"></i> 訓練管理整合平台
                 </a>
-                <a href="javascript:void(0)" onclick="location.href=SYSTEM_LINKS.flow" class="sidebar-link px-4 py-2 rounded-xl flex items-center gap-3 text-sm text-slate-400 hover:text-white mb-1">
+                <a href="javascript:void(0)" onclick="location.href=SYSTEM_LINKS.flow" class="sidebar-link px-4 py-2.5 rounded-xl flex items-center gap-3 text-sm text-slate-400 hover:text-white mb-1 transition">
                     <i class="ri-flow-chart"></i> 訓練流路管理系統
                 </a>
-                <a href="javascript:void(0)" onclick="location.href=SYSTEM_LINKS.booking" class="sidebar-link px-4 py-2 rounded-xl flex items-center gap-3 text-sm text-slate-400 hover:text-white">
+                <a href="javascript:void(0)" onclick="location.href=SYSTEM_LINKS.booking" class="sidebar-link px-4 py-2.5 rounded-xl flex items-center gap-3 text-sm text-slate-400 hover:text-white transition">
                     <i class="ri-building-2-line"></i> 場地借用系統
                 </a>
             </div>
@@ -162,8 +162,8 @@
 
         <div id="page-input" class="flex-1 flex flex-col p-6 overflow-hidden h-full">
             
-            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm shrink-0 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
+            <!-- 上方區塊：本月填報確認 (卡片化 + 黃色邊條) -->
+            <div class="bg-white border border-slate-200 border-l-4 border-l-yellow-400 rounded-xl p-5 mb-6 shadow-sm shrink-0 relative">
                 <div class="flex items-center gap-2 mb-3">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="ri-checkbox-circle-line text-yellow-500 text-lg"></i> 本月填報確認 
@@ -206,38 +206,42 @@
                 <div class="h-px bg-slate-300 flex-1 border-t border-dashed border-slate-300"></div>
             </div>
 
-            <div class="flex justify-between items-center mb-4 shrink-0 flex-wrap gap-2">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                        <i class="ri-edit-box-line text-xl"></i>
+            <!-- 下方區塊：新增作業區 (卡片化 + 藍色邊條) -->
+            <div class="bg-white border border-slate-200 border-l-4 border-l-blue-600 rounded-xl p-5 shadow-sm flex flex-col flex-1 min-h-0">
+                <div class="flex justify-between items-center mb-4 shrink-0 flex-wrap gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                            <i class="ri-edit-box-line text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800">新增作業區</h2>
+                            <p class="text-xs text-slate-500">請填寫下方訓練資料</p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800">新增作業區</h2>
-                        <p class="text-xs text-slate-500">請填寫下方訓練資料</p>
+                    <div class="flex gap-2">
+                        <button class="btn btn-white" onclick="downloadTemplate()"><i class="ri-file-download-line"></i> 下載範本</button>
+                        <button class="btn btn-white" onclick="$('#csvInput').click()"><i class="ri-upload-2-line"></i> 匯入 CSV</button>
+                        <button class="btn btn-blue shadow-lg shadow-blue-200" onclick="saveToCloud()"><i class="ri-cloud-upload-line"></i> 儲存</button>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button class="btn btn-white" onclick="downloadTemplate()"><i class="ri-file-download-line"></i> 下載範本</button>
-                    <button class="btn btn-white" onclick="$('#csvInput').click()"><i class="ri-upload-2-line"></i> 匯入 CSV</button>
-                    <button class="btn btn-blue shadow-lg shadow-blue-200" onclick="saveToCloud()"><i class="ri-cloud-upload-line"></i> 儲存</button>
+                
+                <div class="table-wrapper flex-1">
+                    <table id="inputTable">
+                        <thead>
+                            <tr>
+                                <th style="width:50px">刪</th><th style="width:50px">序</th><th style="width:220px">日期</th>
+                                <th style="width:150px">單位</th><th style="width:200px">地點</th><th style="width:200px">項目</th>
+                                <th style="width:80px">場次</th><th style="width:100px">人數</th><th style="width:150px">備註</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inputBody"></tbody>
+                        <tfoot class="example-row"><tr><td></td><td>Ex</td><td>114年1月1日</td><td>信義中隊</td><td>駐地</td><td>訓練</td><td>1</td><td>20</td><td></td></tr></tfoot>
+                    </table>
                 </div>
+                <div class="mt-4 flex justify-center shrink-0"><button class="btn btn-white w-full md:w-auto justify-center" onclick="addInputRow()"><i class="ri-add-line"></i> 新增一列</button></div>
             </div>
-            
-            <div class="table-wrapper">
-                <table id="inputTable">
-                    <thead>
-                        <tr>
-                            <th style="width:50px">刪</th><th style="width:50px">序</th><th style="width:220px">日期</th>
-                            <th style="width:150px">單位</th><th style="width:200px">地點</th><th style="width:200px">項目</th>
-                            <th style="width:80px">場次</th><th style="width:100px">人數</th><th style="width:150px">備註</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inputBody"></tbody>
-                    <tfoot class="example-row"><tr><td></td><td>Ex</td><td>114年1月1日</td><td>信義中隊</td><td>駐地</td><td>訓練</td><td>1</td><td>20</td><td></td></tr></tfoot>
-                </table>
-            </div>
-            <div class="mt-4 flex justify-center shrink-0"><button class="btn btn-white w-full md:w-auto justify-center" onclick="addInputRow()"><i class="ri-add-line"></i> 新增一列</button></div>
         </div>
+
         <div id="page-history" class="hidden flex-col p-6 overflow-hidden h-full">
             <div class="flex justify-between items-center mb-4 shrink-0 flex-wrap gap-2">
                 <div class="flex items-center gap-2"><span class="w-1 h-6 bg-emerald-600 rounded-full"></span><h2 class="text-xl font-bold text-slate-800">歷史資料庫</h2></div>
@@ -411,7 +415,7 @@
                     <td><input type="text" value="${row.loc}" onchange="inputData[${i}].loc=this.value" placeholder="請填寫"><div class="text-[10px] text-slate-400 mt-1 text-center">填寫地點</div></td>
                     <td><input type="text" value="${row.item}" onchange="inputData[${i}].item=this.value" placeholder="請填寫"><div class="text-[10px] text-slate-400 mt-1 text-center">填寫項目</div></td>
                     <td><input type="number" value="${row.session}" onchange="inputData[${i}].session=this.value" placeholder="0"><div class="text-[10px] text-slate-400 mt-1 text-center">填寫場次</div></td>
-                    <td><input type="number" value="${row.people}" onchange="inputData[${i}].people=this.value" placeholder="0"><div class="text-[10px] text-rose-400 mt-1 text-center font-bold">(各場次加總)</div></td>
+                    <td><input type="number" value="${row.people}" onchange="inputData[${i}].people=this.value" placeholder="0"><div class="text-[10px] text-rose-500 mt-1 text-center font-bold">(各場次加總)</div></td>
                     <td><input type="text" value="${row.note}" onchange="inputData[${i}].note=this.value" placeholder="選填"><div class="text-[10px] text-slate-400 mt-1 text-center">備註事項</div></td>`;
                 tbody.appendChild(tr);
             });
@@ -629,6 +633,7 @@
             $('#photoInput').click();
         }
 
+        // ★ 圖片壓縮函式 (已調整為 2560px 高畫質 / ~1.5MB)
         function compressImage(file, quality = 0.85, maxWidth = 2560) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -779,25 +784,38 @@
             }
         }
 
+       // ★ 修改後：打開日曆時，自動定位到「當前月份」或「已選月份」
         function openCalendar(i) { 
             currentCalRow = i; 
             selectedDates.clear(); 
+
+            // 1. 取得該格目前的日期值
             const val = inputData[i].date;
             const now = new Date();
+            
+            // 預設先抓「現在」的時間
             currentYear = now.getFullYear();
             currentMonth = now.getMonth() + 1;
+
+            // 2. 如果格子裡已經有日期 (例如 "114年5月")，就解析它並跳轉過去
             if (val) {
+                // 抓取字串中的前兩個數字 (年、月)
                 const match = val.match(/(\d+)[^0-9]+(\d+)/);
                 if (match) {
                     let y = parseInt(match[1]);
                     let m = parseInt(match[2]);
+                    
+                    // 判斷是否為民國年 (小於 1911 就當作民國年)
                     if (y < 1911) y += 1911;
+                    
+                    // 簡單防呆：月份要是合理的才跳轉
                     if (m >= 1 && m <= 12) {
                         currentYear = y;
                         currentMonth = m;
                     }
                 }
             }
+
             renderCalendarGrid(); 
             $('#calendarModal').classList.remove('hidden'); 
             $('#calendarModal').classList.add('flex'); 
