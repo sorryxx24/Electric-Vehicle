@@ -84,7 +84,8 @@
         .day-cell.selected { background: #3b82f6; color: white; font-weight: bold; }
         .day-cell.weekend { color: #ef4444; }
         
-        .gallery-card { break-inside: avoid; margin-bottom: 1.5rem; transition: transform 0.2s; }
+        /* 修改 Gallery Card 樣式為 Grid 友善 */
+        .gallery-card { transition: transform 0.2s; display: flex; flex-direction: column; }
         .gallery-card:hover { transform: translateY(-4px); }
         
         #alertBanner { transition: all 0.5s ease-in-out; }
@@ -156,7 +157,6 @@
             <button onclick="$('#alertBanner').classList.add('hidden')" class="text-rose-400 hover:text-rose-700"><i class="ri-close-line text-lg"></i></button>
         </div>
 
-        <!-- ★ 這裡修改為 overflow-y-auto (允許捲動) ★ -->
         <div id="page-input" class="flex-1 flex flex-col p-6 overflow-y-auto h-full">
             
             <div class="bg-white border border-slate-200 border-l-4 border-l-yellow-400 rounded-xl p-5 mb-6 shadow-sm shrink-0 relative">
@@ -201,8 +201,8 @@
                 <div class="h-px bg-slate-300 flex-1 border-t border-dashed border-slate-300"></div>
             </div>
 
-            <!-- ★ 這裡拿掉了 flex-1 和 min-h-0，改為 h-auto，讓它自然長高 ★ -->
-            <div class="bg-white border border-slate-200 border-l-4 border-l-blue-600 rounded-xl p-5 shadow-sm flex flex-col h-auto">
+            <!-- ★ 修改點：使用 flex-1 讓藍色卡片自動填滿剩餘高度 ★ -->
+            <div class="bg-white border border-slate-200 border-l-4 border-l-blue-600 rounded-xl p-5 shadow-sm flex flex-col flex-1">
                 <div class="flex justify-between items-center mb-4 shrink-0 flex-wrap gap-2">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
@@ -236,8 +236,7 @@
                 <div class="mt-4 flex justify-center shrink-0"><button class="btn btn-white w-full md:w-auto justify-center" onclick="addInputRow()"><i class="ri-add-line"></i> 新增一列</button></div>
             </div>
             
-            <!-- 底部留白，方便捲動到底部 -->
-            <div class="h-20"></div>
+            <div class="h-10"></div>
         </div>
         
         <div id="page-history" class="hidden flex-col p-6 overflow-hidden h-full">
@@ -277,7 +276,6 @@
             </div>
         </div>
 
-        <!-- ★ 修改後：成果展示牆 (含搜尋與分頁) -->
         <div id="page-gallery" class="hidden flex-1 flex-col p-6 overflow-hidden h-full bg-slate-50">
             <div class="flex justify-between items-center mb-6 shrink-0 flex-wrap gap-3">
                 <div class="flex items-center gap-2">
@@ -285,16 +283,16 @@
                     <h2 class="text-xl font-bold text-slate-800">成果展示牆</h2>
                 </div>
                 
-                <!-- 搜尋框區塊 -->
+                <!-- 搜尋框 -->
                 <div class="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm flex-1 max-w-md">
                     <div class="pl-3 flex items-center text-slate-400"><i class="ri-search-line"></i></div>
                     <input type="text" id="gallerySearchInput" onkeyup="searchGallery()" placeholder="搜尋單位、項目或日期..." class="w-full border-none outline-none bg-transparent px-2 text-sm font-bold text-slate-700 h-9">
                 </div>
             </div>
             
-            <!-- 照片列表區 -->
+            <!-- ★ 修改點：改用 Grid 網格排列，取代 Masonry (Columns) ★ -->
             <div class="flex-1 overflow-y-auto min-h-0 pr-2 scroll-smooth" id="galleryContainer">
-                <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6" id="galleryGrid"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="galleryGrid"></div>
             </div>
 
             <!-- 分頁控制區 -->
@@ -306,11 +304,6 @@
                     <button onclick="changeGalleryPage(-1)" id="galPrevBtn" class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-sm font-bold disabled:opacity-50">上一頁</button>
                     <button onclick="changeGalleryPage(1)" id="galNextBtn" class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-sm font-bold disabled:opacity-50">下一頁</button>
                 </div>
-            </div>
-        </div>
-            
-            <div class="flex-1 overflow-y-auto min-h-0 pr-2" id="galleryContainer">
-                <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6" id="galleryGrid"></div>
             </div>
         </div>
     </main>
@@ -347,6 +340,11 @@
         const itemsPerPage = 20;
         let uploadTarget = null; 
         let galleryMode = 'random'; 
+
+        // Gallery Pagination Variables
+        let galleryPage = 1;
+        let gallerySearchText = "";
+        const galleryPerPage = 24;
 
         window.onload = function() { 
             addInputRow(); 
@@ -385,7 +383,7 @@
             target.classList.remove('hidden');
             
             if(page === 'history' || page === 'gallery') target.classList.add('flex');
-            if(page === 'gallery') renderGallery(galleryMode);
+            if(page === 'gallery') renderGallery();
         }
         function fixYearFormat(val) {
             if (!val) return "";
@@ -503,6 +501,7 @@
                     renderHistoryTable();
                     renderAlertBanner();
                     renderUnitCheckboxes(); 
+                    if(currentTab === 'gallery') renderGallery();
                 }
             }).finally(() => hideLoading());
         }
@@ -735,16 +734,13 @@
                 alert(`上傳失敗！\n原因：${failMsg}`);
             }
         }
-       // ==========================================
-        // ★ 新增：成果牆的分頁與搜尋邏輯
-        // ==========================================
-        let galleryPage = 1;
-        let gallerySearchText = "";
-        const galleryPerPage = 24; // 每頁顯示幾張
 
+        // ==========================================
+        // ★ Gallery Logic (Grid + Search + Pagination)
+        // ==========================================
         function searchGallery() {
             gallerySearchText = document.getElementById('gallerySearchInput').value.toLowerCase();
-            galleryPage = 1; // 搜尋時重置回第一頁
+            galleryPage = 1;
             renderGallery();
         }
 
@@ -754,16 +750,13 @@
         }
 
         function renderGallery() {
-            // 1. 篩選資料 (搜尋)
             let filtered = historyData.filter(r => {
                 const keyword = gallerySearchText;
                 if (!keyword) return true;
-                // 比對 日期、單位、項目、備註
                 const content = `${r.date} ${r.unit} ${r.item} ${r.note}`.toLowerCase();
                 return content.includes(keyword);
             });
 
-            // 2. 計算分頁
             const total = filtered.length;
             const maxPage = Math.ceil(total / galleryPerPage) || 1;
             
@@ -774,7 +767,6 @@
             const endIdx = startIdx + galleryPerPage;
             const displayList = filtered.slice(startIdx, endIdx);
 
-            // 3. 渲染畫面
             const container = $('#galleryGrid');
             container.innerHTML = '';
 
@@ -793,7 +785,6 @@
                         ${item.folderUrl ? '<div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm"><i class="ri-image-2-line"></i> 相簿</div>' : ''}
                     `;
                 } else {
-                    // 沒圖的顯示樣式
                     cardContent = `
                         <div class="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-400">
                             <i class="ri-folder-unknow-line text-3xl mb-1"></i>
@@ -803,26 +794,27 @@
                 }
 
                 const card = document.createElement('div');
-                card.className = 'gallery-card bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100 cursor-pointer group break-inside-avoid mb-6';
-                // 點擊卡片開啟 Google Drive 資料夾
+                // Grid Item 樣式
+                card.className = 'gallery-card bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100 cursor-pointer group hover:shadow-md';
                 card.onclick = () => { if(item.folderUrl) window.open(item.folderUrl, '_blank'); };
                 
                 card.innerHTML = `
                     <div class="relative overflow-hidden aspect-video bg-slate-50">
                         ${cardContent}
                     </div>
-                    <div class="p-4">
-                        <h3 class="font-bold text-slate-800 line-clamp-1 mb-1 text-sm">${item.item}</h3>
-                        <div class="flex justify-between items-center text-xs text-slate-500">
-                            <span><i class="ri-calendar-line"></i> ${item.date}</span>
-                            <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${item.unit}</span>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 line-clamp-1 mb-1 text-sm" title="${item.item}">${item.item}</h3>
+                            <div class="flex justify-between items-center text-xs text-slate-500">
+                                <span><i class="ri-calendar-line"></i> ${item.date}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${item.unit}</span>
+                            </div>
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
 
-            // 4. 更新分頁資訊文字與按鈕狀態
             $('#galInfoStart').innerText = total > 0 ? startIdx + 1 : 0;
             $('#galInfoEnd').innerText = Math.min(endIdx, total);
             $('#galInfoTotal').innerText = total;
@@ -831,29 +823,25 @@
             $('#galNextBtn').disabled = galleryPage >= maxPage || total === 0;
         }
 
+        // ==========================================
+        // ★ Smart Calendar
+        // ==========================================
         function openCalendar(i) { 
             currentCalRow = i; 
             selectedDates.clear(); 
 
-            // 1. 取得該格目前的日期值
             const val = inputData[i].date;
             const now = new Date();
             
-            // 預設：直接抓取電腦的「現在年份」與「現在月份」
             currentYear = now.getFullYear();
             currentMonth = now.getMonth() + 1;
 
-            // 2. 如果格子裡已經有填日期 (例如 "114年5月")，就改為跳轉到該月份
             if (val) {
                 const match = val.match(/(\d+)[^0-9]+(\d+)/);
                 if (match) {
                     let y = parseInt(match[1]);
                     let m = parseInt(match[2]);
-                    
-                    // 判斷是否為民國年 (小於 1911 就當作民國年)
                     if (y < 1911) y += 1911;
-                    
-                    // 防呆：月份要是合理的才跳轉
                     if (m >= 1 && m <= 12) {
                         currentYear = y;
                         currentMonth = m;
