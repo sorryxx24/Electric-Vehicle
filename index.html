@@ -735,31 +735,54 @@
                 alert(`上傳失敗！\n原因：${failMsg}`);
             }
         }
-        function renderGallery(mode = 'random') {
-            galleryMode = mode; 
-            const btnLatest = $('#btnGalleryLatest');
-            const btnRandom = $('#btnGalleryRandom');
-            
-            if (mode === 'latest') {
-                btnLatest.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition bg-slate-800 text-white shadow";
-                btnRandom.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-500 hover:text-slate-800";
-            } else {
-                btnRandom.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition bg-slate-800 text-white shadow";
-                btnLatest.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-500 hover:text-slate-800";
-            }
+       // ==========================================
+        // ★ 新增：成果牆的分頁與搜尋邏輯
+        // ==========================================
+        let galleryPage = 1;
+        let gallerySearchText = "";
+        const galleryPerPage = 24; // 每頁顯示幾張
 
+        function searchGallery() {
+            gallerySearchText = document.getElementById('gallerySearchInput').value.toLowerCase();
+            galleryPage = 1; // 搜尋時重置回第一頁
+            renderGallery();
+        }
+
+        function changeGalleryPage(delta) {
+            galleryPage += delta;
+            renderGallery();
+        }
+
+        function renderGallery() {
+            // 1. 篩選資料 (搜尋)
+            let filtered = historyData.filter(r => {
+                const keyword = gallerySearchText;
+                if (!keyword) return true;
+                // 比對 日期、單位、項目、備註
+                const content = `${r.date} ${r.unit} ${r.item} ${r.note}`.toLowerCase();
+                return content.includes(keyword);
+            });
+
+            // 2. 計算分頁
+            const total = filtered.length;
+            const maxPage = Math.ceil(total / galleryPerPage) || 1;
+            
+            if (galleryPage < 1) galleryPage = 1;
+            if (galleryPage > maxPage) galleryPage = maxPage;
+
+            const startIdx = (galleryPage - 1) * galleryPerPage;
+            const endIdx = startIdx + galleryPerPage;
+            const displayList = filtered.slice(startIdx, endIdx);
+
+            // 3. 渲染畫面
             const container = $('#galleryGrid');
             container.innerHTML = '';
 
-            let withPhotos = historyData.filter(r => r.coverUrl);
-            let withoutPhotos = historyData.filter(r => !r.coverUrl);
-            let displayList = [];
-
-            if (mode === 'latest') {
-                displayList = [...withPhotos, ...withoutPhotos].slice(0, 24);
-            } else {
-                let all = [...withPhotos, ...withoutPhotos];
-                displayList = all.sort(() => Math.random() - 0.5).slice(0, 24);
+            if (displayList.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center text-slate-400 py-20 flex flex-col items-center">
+                    <i class="ri-search-2-line text-4xl mb-2"></i>
+                    <span>沒有符合的資料</span>
+                </div>`;
             }
 
             displayList.forEach(item => {
@@ -767,19 +790,21 @@
                 if (item.coverUrl) {
                     cardContent = `
                         <img src="${item.coverUrl}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" loading="lazy">
-                        ${item.folderUrl ? '<div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-lg backdrop-blur-sm"><i class="ri-image-2-line"></i> 相簿</div>' : ''}
+                        ${item.folderUrl ? '<div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm"><i class="ri-image-2-line"></i> 相簿</div>' : ''}
                     `;
                 } else {
+                    // 沒圖的顯示樣式
                     cardContent = `
                         <div class="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-400">
                             <i class="ri-folder-unknow-line text-3xl mb-1"></i>
-                            <span class="text-xs font-bold tracking-widest">資料建構中</span>
+                            <span class="text-[10px] font-bold tracking-widest mt-1">無封面圖</span>
                         </div>
                     `;
                 }
 
                 const card = document.createElement('div');
-                card.className = 'gallery-card bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100 cursor-pointer group';
+                card.className = 'gallery-card bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100 cursor-pointer group break-inside-avoid mb-6';
+                // 點擊卡片開啟 Google Drive 資料夾
                 card.onclick = () => { if(item.folderUrl) window.open(item.folderUrl, '_blank'); };
                 
                 card.innerHTML = `
@@ -787,19 +812,23 @@
                         ${cardContent}
                     </div>
                     <div class="p-4">
-                        <h3 class="font-bold text-slate-800 line-clamp-1 mb-1">${item.item}</h3>
+                        <h3 class="font-bold text-slate-800 line-clamp-1 mb-1 text-sm">${item.item}</h3>
                         <div class="flex justify-between items-center text-xs text-slate-500">
                             <span><i class="ri-calendar-line"></i> ${item.date}</span>
-                            <span class="bg-slate-100 px-2 py-0.5 rounded-full">${item.unit}</span>
+                            <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${item.unit}</span>
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
+
+            // 4. 更新分頁資訊文字與按鈕狀態
+            $('#galInfoStart').innerText = total > 0 ? startIdx + 1 : 0;
+            $('#galInfoEnd').innerText = Math.min(endIdx, total);
+            $('#galInfoTotal').innerText = total;
             
-            if(displayList.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center text-slate-400 py-10">目前尚無成果照片</div>`;
-            }
+            $('#galPrevBtn').disabled = galleryPage === 1;
+            $('#galNextBtn').disabled = galleryPage >= maxPage || total === 0;
         }
 
         function openCalendar(i) { 
