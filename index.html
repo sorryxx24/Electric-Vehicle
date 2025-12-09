@@ -60,11 +60,16 @@
         .table-wrapper { flex: 1; min-height: 0; overflow: auto; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
         table { width: 100%; min-width: 1100px; border-collapse: collapse; table-layout: fixed; }
         th { background: #f8fafc; color: #475569; font-weight: 700; padding: 10px; border: 1px solid #cbd5e1; font-size: 14px; position: sticky; top: 0; z-index: 10; }
-        td { border: 1px solid #cbd5e1; height: 42px; padding: 0; vertical-align: middle; background: white; }
-        input { width: 100%; height: 100%; border: none; text-align: center; outline: none; background: transparent; }
-        input:focus { background: #eff6ff; }
         
-        .example-row td { background: #f1f5f9; color: #94a3b8; font-style: italic; pointer-events: none; }
+        /* 修改 TD 高度與排版，讓提示文字能顯示 */
+        td { border: 1px solid #cbd5e1; height: auto; padding: 8px 4px; vertical-align: top; background: white; }
+        
+        /* 輸入框樣式調整 */
+        input { width: 100%; text-align: center; outline: none; background: transparent; font-size: 14px; font-weight: 500; color: #1e293b; }
+        input:focus { background: #eff6ff; border-radius: 4px; }
+        input::placeholder { color: #cbd5e1; font-weight: 400; }
+        
+        .example-row td { background: #f1f5f9; color: #94a3b8; font-style: italic; pointer-events: none; padding: 12px 4px; }
         
         .btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.2s; font-size: 14px; }
         .btn-blue { background: #2563eb; color: white; } .btn-blue:hover { background: #1d4ed8; }
@@ -98,12 +103,24 @@
             </div>
             <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white"><i class="ri-close-line text-2xl"></i></button>
         </div>
+        
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <div onclick="switchPage('input')" id="nav-input" class="sidebar-link active px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-edit-2-line text-xl"></i> 新增作業區</div>
             <div onclick="switchPage('history')" id="nav-history" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-database-2-line text-xl"></i> 歷史資料庫</div>
             <div onclick="switchPage('gallery')" id="nav-gallery" class="sidebar-link px-4 py-3 rounded-xl flex items-center gap-3 cursor-pointer"><i class="ri-gallery-view-2 text-xl text-yellow-400"></i> 成果展示</div>
+
+            <!-- ★ 這裡就是您的多元宇宙連結區 -->
+            <div class="pt-6 pb-2">
+                <div class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">訓練系統多元宇宙</div>
+                <a href="https://www.google.com" target="_blank" class="sidebar-link px-4 py-2 rounded-xl flex items-center gap-3 text-sm text-slate-300 hover:text-white mb-1">
+                    <i class="ri-external-link-line"></i> 訓練管理整合平台
+                </a>
+                <a href="https://www.tfd.gov.tw" target="_blank" class="sidebar-link px-4 py-2 rounded-xl flex items-center gap-3 text-sm text-slate-300 hover:text-white">
+                    <i class="ri-government-line"></i> 消防局入口網
+                </a>
+            </div>
         </nav>
-        <!-- 已移除版本號顯示 -->
+        
         <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500"></div>
     </aside>
 
@@ -111,7 +128,6 @@
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative min-w-0">
         
-        <!-- 手機版 Header -->
         <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-4 md:hidden shrink-0 z-10">
             <div class="font-bold text-slate-700 flex items-center gap-2">
                 <span class="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white"><i class="ri-charging-pile-2-line"></i></span>
@@ -136,57 +152,76 @@
 
         <div id="page-input" class="flex-1 flex flex-col p-6 overflow-hidden h-full">
             
-            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm shrink-0">
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="w-1 h-5 bg-yellow-500 rounded-full"></span>
-                    <h3 class="font-bold text-slate-700 text-sm">本月填報確認 <span class="text-xs font-normal text-slate-400 ml-1">(請勾選單位並送出)</span></h3>
+            <!-- 稽核區塊 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm shrink-0 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
+                <div class="flex items-center gap-2 mb-4">
+                    <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                        <i class="ri-checkbox-circle-line text-yellow-500 text-xl"></i> 本月填報確認 
+                    </h3>
+                    <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">請勾選單位並送出</span>
                 </div>
                 
                 <div class="flex flex-wrap items-end gap-3">
                     <div class="flex-1 min-w-[140px]">
                         <label class="text-[10px] font-bold text-slate-400 block mb-1">選擇大隊</label>
-                        <select id="selBat" onchange="renderSquadSelect()" class="w-full border border-slate-300 rounded-lg p-1.5 text-sm bg-slate-50 font-bold outline-none focus:border-blue-500"><option value="">大隊...</option></select>
+                        <select id="selBat" onchange="renderSquadSelect()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-slate-50 font-bold outline-none focus:border-blue-500 focus:bg-white transition"><option value="">大隊...</option></select>
                     </div>
                     <div class="flex-1 min-w-[140px]">
                         <label class="text-[10px] font-bold text-slate-400 block mb-1">選擇中隊</label>
-                        <select id="selSquad" onchange="renderUnitCheckboxes()" class="w-full border border-slate-300 rounded-lg p-1.5 text-sm bg-slate-50 font-bold outline-none focus:border-blue-500" disabled><option value="">請先選大隊</option></select>
+                        <select id="selSquad" onchange="renderUnitCheckboxes()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-slate-50 font-bold outline-none focus:border-blue-500 focus:bg-white transition" disabled><option value="">請先選大隊</option></select>
                     </div>
                     <div class="w-[200px]">
                         <label class="text-[10px] font-bold text-slate-400 block mb-1">狀態</label>
                         <div class="flex bg-slate-100 p-1 rounded-lg">
-                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="auditType" value="已填寫" checked class="hidden peer"><span class="block text-xs py-1 rounded peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm peer-checked:font-bold text-slate-500 transition">已填寫</span></label>
-                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="auditType" value="本月無更新" class="hidden peer"><span class="block text-xs py-1 rounded peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm peer-checked:font-bold text-slate-500 transition">本月無更新</span></label>
+                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="auditType" value="已填寫" checked class="hidden peer"><span class="block text-xs py-1.5 rounded peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm peer-checked:font-bold text-slate-500 transition">已填寫</span></label>
+                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="auditType" value="本月無更新" class="hidden peer"><span class="block text-xs py-1.5 rounded peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm peer-checked:font-bold text-slate-500 transition">本月無更新</span></label>
                         </div>
                     </div>
-                    <button onclick="submitAudit()" class="bg-slate-800 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-slate-700 active:scale-95 transition h-[34px] flex items-center gap-1"><i class="ri-check-double-line"></i> 送出確認</button>
+                    <button onclick="submitAudit()" class="bg-slate-800 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-lg hover:bg-slate-700 active:scale-95 transition flex items-center gap-2"><i class="ri-send-plane-fill"></i> 送出確認</button>
                 </div>
 
-                <div id="unitCheckArea" class="mt-3 pt-3 border-t border-slate-100 hidden">
+                <div id="unitCheckArea" class="mt-4 pt-4 border-t border-slate-100 hidden">
                     <div class="flex justify-between mb-2">
-                        <span class="text-xs text-slate-400">勾選單位 (可多選)：</span>
+                        <span class="text-xs text-slate-400 font-bold">勾選單位 (可多選)：</span>
                         <button onclick="toggleAllUnits()" class="text-xs text-blue-500 hover:underline">全選</button>
                     </div>
                     <div id="unitCheckboxGrid" class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2"></div>
                 </div>
             </div>
 
+            <!-- ★ 分隔線 ★ -->
+            <div class="my-8 flex items-center gap-4">
+                <div class="h-px bg-slate-300 flex-1 border-t border-dashed border-slate-300"></div>
+                <div class="text-slate-400 text-xs font-mono">NEW ENTRY</div>
+                <div class="h-px bg-slate-300 flex-1 border-t border-dashed border-slate-300"></div>
+            </div>
+
             <div class="flex justify-between items-center mb-4 shrink-0 flex-wrap gap-2">
-                <div class="flex items-center gap-2"><span class="w-1 h-6 bg-blue-600 rounded-full"></span><h2 class="text-xl font-bold text-slate-800">新增作業區</h2></div>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shadow-sm">
+                        <i class="ri-edit-box-line text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">新增作業區</h2>
+                        <p class="text-xs text-slate-500">請填寫下方表格資料</p>
+                    </div>
+                </div>
                 <div class="flex gap-2">
                     <button class="btn btn-white" onclick="downloadTemplate()"><i class="ri-file-download-line"></i> 下載範本</button>
                     <button class="btn btn-white" onclick="$('#csvInput').click()"><i class="ri-upload-2-line"></i> 匯入 CSV</button>
-                    <button class="btn btn-blue" onclick="saveToCloud()"><i class="ri-cloud-upload-line"></i> 儲存</button>
+                    <button class="btn btn-blue shadow-lg shadow-blue-200" onclick="saveToCloud()"><i class="ri-cloud-upload-line"></i> 儲存</button>
                 </div>
             </div>
             
             <div class="table-wrapper">
                 <table id="inputTable">
-                    <thead><tr><th style="width:50px">刪</th><th style="width:50px">序</th><th style="width:220px">日期</th><th style="width:150px">單位</th><th style="width:200px">地點</th><th style="width:200px">項目</th><th style="width:80px">場次</th><th style="width:80px">人數</th><th style="width:150px">備註</th></tr></thead>
+                    <thead><tr><th style="width:50px">刪</th><th style="width:50px">序</th><th style="width:220px">日期</th><th style="width:150px">單位</th><th style="width:200px">地點</th><th style="width:200px">項目</th><th style="width:80px">場次</th><th style="width:100px">人數</th><th style="width:150px">備註</th></tr></thead>
                     <tbody id="inputBody"></tbody>
                     <tfoot class="example-row"><tr><td></td><td>Ex</td><td>114年1月1日</td><td>信義中隊</td><td>駐地</td><td>訓練</td><td>1</td><td>20</td><td></td></tr></tfoot>
                 </table>
             </div>
-            <div class="mt-4 flex justify-center shrink-0"><button class="btn btn-white" onclick="addInputRow()"><i class="ri-add-line"></i> 新增一列</button></div>
+            <div class="mt-4 flex justify-center shrink-0"><button class="btn btn-white w-full md:w-auto justify-center" onclick="addInputRow()"><i class="ri-add-line"></i> 新增一列</button></div>
         </div>
         <div id="page-history" class="hidden flex-col p-6 overflow-hidden h-full">
             <div class="flex justify-between items-center mb-4 shrink-0 flex-wrap gap-2">
@@ -347,7 +382,22 @@
             const tbody = $('#inputBody'); tbody.innerHTML = '';
             inputData.forEach((row, i) => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="text-center"><button onclick="removeInputRow(${i})" class="text-slate-300 hover:text-red-500"><i class="ri-close-circle-fill text-xl"></i></button></td><td class="text-center text-slate-400 font-mono">${i + 1}</td><td><div class="flex items-center h-full"><input type="text" value="${row.date}" onchange="inputData[${i}].date=this.value" placeholder="點擊選取日期"><button onclick="openCalendar(${i})" class="w-8 h-full bg-slate-50 border-l hover:text-blue-600"><i class="ri-calendar-line"></i></button></div></td><td><input type="text" value="${row.unit}" onchange="inputData[${i}].unit=this.value"></td><td><input type="text" value="${row.loc}" onchange="inputData[${i}].loc=this.value"></td><td><input type="text" value="${row.item}" onchange="inputData[${i}].item=this.value"></td><td><input type="number" value="${row.session}" onchange="inputData[${i}].session=this.value"></td><td><input type="number" value="${row.people}" onchange="inputData[${i}].people=this.value"></td><td><input type="text" value="${row.note}" onchange="inputData[${i}].note=this.value"></td>`;
+                tr.innerHTML = `
+                    <td class="text-center align-middle"><button onclick="removeInputRow(${i})" class="text-slate-300 hover:text-red-500"><i class="ri-close-circle-fill text-xl"></i></button></td>
+                    <td class="text-center text-slate-400 font-mono align-middle">${i + 1}</td>
+                    <td>
+                        <div class="flex items-center h-full relative">
+                            <input type="text" value="${row.date}" onchange="inputData[${i}].date=this.value" placeholder="點擊選取日期">
+                            <button onclick="openCalendar(${i})" class="absolute right-0 top-0 h-full w-8 text-slate-400 hover:text-blue-600"><i class="ri-calendar-line"></i></button>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1 text-center">請填選日期</div>
+                    </td>
+                    <td><input type="text" value="${row.unit}" onchange="inputData[${i}].unit=this.value" placeholder="請填寫"><div class="text-[10px] text-slate-400 mt-1 text-center">填寫單位</div></td>
+                    <td><input type="text" value="${row.loc}" onchange="inputData[${i}].loc=this.value" placeholder="請填寫"><div class="text-[10px] text-slate-400 mt-1 text-center">填寫地點</div></td>
+                    <td><input type="text" value="${row.item}" onchange="inputData[${i}].item=this.value" placeholder="請填寫"><div class="text-[10px] text-slate-400 mt-1 text-center">填寫項目</div></td>
+                    <td><input type="number" value="${row.session}" onchange="inputData[${i}].session=this.value" placeholder="0"><div class="text-[10px] text-slate-400 mt-1 text-center">填寫場次</div></td>
+                    <td><input type="number" value="${row.people}" onchange="inputData[${i}].people=this.value" placeholder="0"><div class="text-[10px] text-rose-400 mt-1 text-center font-bold">(各場次加總)</div></td>
+                    <td><input type="text" value="${row.note}" onchange="inputData[${i}].note=this.value" placeholder="選填"><div class="text-[10px] text-slate-400 mt-1 text-center">備註事項</div></td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -564,7 +614,6 @@
             $('#photoInput').click();
         }
 
-        // ★ 圖片壓縮函式 (已調整為 2560px 高畫質 / ~1.5MB)
         function compressImage(file, quality = 0.85, maxWidth = 2560) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -715,38 +764,25 @@
             }
         }
 
-       // ★ 修改後：打開日曆時，自動定位到「當前月份」或「已選月份」
         function openCalendar(i) { 
             currentCalRow = i; 
             selectedDates.clear(); 
-
-            // 1. 取得該格目前的日期值
             const val = inputData[i].date;
             const now = new Date();
-            
-            // 預設先抓「現在」的時間
             currentYear = now.getFullYear();
             currentMonth = now.getMonth() + 1;
-
-            // 2. 如果格子裡已經有日期 (例如 "114年5月")，就解析它並跳轉過去
             if (val) {
-                // 抓取字串中的前兩個數字 (年、月)
                 const match = val.match(/(\d+)[^0-9]+(\d+)/);
                 if (match) {
                     let y = parseInt(match[1]);
                     let m = parseInt(match[2]);
-                    
-                    // 判斷是否為民國年 (小於 1911 就當作民國年)
                     if (y < 1911) y += 1911;
-                    
-                    // 簡單防呆：月份要是合理的才跳轉
                     if (m >= 1 && m <= 12) {
                         currentYear = y;
                         currentMonth = m;
                     }
                 }
             }
-
             renderCalendarGrid(); 
             $('#calendarModal').classList.remove('hidden'); 
             $('#calendarModal').classList.add('flex'); 
