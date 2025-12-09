@@ -782,7 +782,40 @@
             }
         }
 
-        function openCalendar(i){ currentCalRow=i; selectedDates.clear(); renderCalendarGrid(); $('#calendarModal').classList.remove('hidden'); $('#calendarModal').classList.add('flex'); }
+        function openCalendar(i) { 
+            currentCalRow = i; 
+            selectedDates.clear(); 
+
+            // 1. 取得該格目前的日期值
+            const val = inputData[i].date;
+            const now = new Date();
+            
+            // 預設：直接抓取電腦的「現在年份」與「現在月份」
+            currentYear = now.getFullYear();
+            currentMonth = now.getMonth() + 1;
+
+            // 2. 如果格子裡已經有填日期 (例如 "114年5月")，就改為跳轉到該月份
+            if (val) {
+                const match = val.match(/(\d+)[^0-9]+(\d+)/);
+                if (match) {
+                    let y = parseInt(match[1]);
+                    let m = parseInt(match[2]);
+                    
+                    // 判斷是否為民國年 (小於 1911 就當作民國年)
+                    if (y < 1911) y += 1911;
+                    
+                    // 防呆：月份要是合理的才跳轉
+                    if (m >= 1 && m <= 12) {
+                        currentYear = y;
+                        currentMonth = m;
+                    }
+                }
+            }
+
+            renderCalendarGrid(); 
+            $('#calendarModal').classList.remove('hidden'); 
+            $('#calendarModal').classList.add('flex'); 
+        }
         
         function renderCalendarGrid() {
             const grid = $('#calGrid'); grid.innerHTML = '';
